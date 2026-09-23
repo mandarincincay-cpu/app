@@ -1,0 +1,1681 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mandarin Cincay — Panel Admin</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Serif+SC:wght@500;700&display=swap" rel="stylesheet">
+<!-- ?v= dinaikkan tiap kali api.js berubah, supaya browser tidak memakai versi cache -->
+<script src="api.js?v=9"></script>
+<style>
+/* ══ MANDARIN CINCAY — cream & maroon ══════════════════════ */
+:root{
+  --cream:#FAF4E8;  --cream2:#F2E7D3;  --paper:#FFFDF8;
+  --maroon:#7A1F2B; --maroon-d:#551017; --maroon-l:#9B3040;
+  --gold:#C08A3E;   --gold-soft:#F5E6C8;
+  --ink:#2C1A1C;    --muted:#8A7268;   --border:#E6D8BF;
+  --ok:#2F7A55;     --ok-bg:#E7F3EC;
+  --warn:#A9702A;   --warn-bg:#FBF0DC;
+  --danger:#B3261E; --danger-bg:#FBEAE8;
+  --shadow:0 1px 2px rgba(85,16,23,.06),0 8px 24px -12px rgba(85,16,23,.18);
+  --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--cream);color:var(--ink);-webkit-font-smoothing:antialiased}
+.zh{font-family:'Noto Serif SC','Plus Jakarta Sans',serif}
+.serif{font-family:'Fraunces',Georgia,serif}
+button,input,select,textarea{font-family:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#DCC9AC;border-radius:6px;border:3px solid var(--cream)}
+
+/* ── SHELL ─────────────────────────────────────────────── */
+#appShell{display:flex;flex-direction:column;min-height:100vh}
+.app-header{position:sticky;top:0;z-index:60;height:60px;display:flex;align-items:center;gap:14px;padding:0 20px;
+  background:var(--paper);border-bottom:1px solid var(--border);box-shadow:0 2px 14px -8px rgba(85,16,23,.35)}
+.hdr-logo{height:36px;width:auto;flex-shrink:0}
+.hdr-fb{display:none;align-items:center;gap:10px}
+.mark-sm{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  background:linear-gradient(150deg,var(--maroon-l),var(--maroon-d));color:var(--gold-soft);
+  font-family:'Noto Serif SC',serif;font-size:21px;font-weight:700}
+.app-title{font-family:'Fraunces',serif;font-size:16px;font-weight:900;color:var(--maroon);letter-spacing:-.2px;line-height:1.15;display:block}
+.app-sub{font-size:10px;color:var(--gold);letter-spacing:.3px;margin-top:1px;font-weight:700;font-style:italic;display:block}
+.hdr-label{font-size:10.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;
+  padding-left:14px;border-left:1px solid var(--border);white-space:nowrap}
+.hdr-build{display:block;font-size:9.5px;font-weight:700;color:var(--gold);letter-spacing:.3px;text-transform:none;margin-top:1px}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.hdr-pill{padding:7px 14px;border-radius:999px;border:1px solid var(--border);background:var(--cream);color:var(--maroon);
+  font-size:11.5px;font-weight:700;letter-spacing:.3px;white-space:nowrap}
+
+.tab-nav{position:sticky;top:60px;z-index:55;display:flex;gap:4px;padding:8px 16px;background:var(--cream2);
+  border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
+.tab-nav::-webkit-scrollbar{display:none}
+.tab-btn{padding:9px 15px;border-radius:10px;font-size:13px;font-weight:700;color:var(--muted);white-space:nowrap;transition:.15s}
+.tab-btn:hover{color:var(--maroon);background:rgba(122,31,43,.07)}
+.tab-btn.active{background:var(--maroon);color:var(--gold-soft);box-shadow:0 4px 12px -4px rgba(85,16,23,.5)}
+.app-content{flex:1;padding:20px 16px 60px;max-width:1180px;width:100%;margin:0 auto}
+.tab-page{display:none;animation:fade .22s ease}
+.tab-page.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ── CARDS / TABLES ────────────────────────────────────── */
+.section-card{background:var(--paper);border:1px solid var(--border);border-radius:var(--radius);padding:18px;
+  margin-bottom:16px;box-shadow:var(--shadow)}
+.card-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.card-head h3{font-family:'Fraunces',serif;font-size:16px;font-weight:800;letter-spacing:-.2px;flex:1;min-width:180px}
+.card-head .zh-tag{font-family:'Noto Serif SC',serif;font-size:13px;color:var(--gold);font-weight:700}
+
+.grid-4{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+
+.stat-card{background:var(--paper);border:1px solid var(--border);border-radius:var(--radius);padding:16px 16px 14px;
+  box-shadow:var(--shadow);position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--maroon)}
+.stat-card.g::before{background:var(--ok)} .stat-card.y::before{background:var(--gold)} .stat-card.b::before{background:var(--maroon-l)}
+.s-icon{font-size:17px;opacity:.85}
+.s-val{font-family:'Fraunces',serif;font-size:27px;font-weight:900;margin-top:4px;letter-spacing:-1px;line-height:1}
+.s-label{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-top:5px}
+
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:11px}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:520px;background:var(--paper)}
+th{background:var(--cream2);padding:10px 12px;text-align:left;font-size:11px;font-weight:800;color:var(--maroon);
+  text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;border-bottom:1px solid var(--border)}
+td{padding:11px 12px;border-bottom:1px solid #F0E6D4;vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#FCF7EC}
+.empty{text-align:center;padding:26px 14px;color:var(--muted);font-size:13px}
+
+/* ── FORMS ─────────────────────────────────────────────── */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.form-row-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:12px}
+.form-field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.form-field label{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.form-field input,.form-field select,.form-field textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border);
+  border-radius:10px;font-size:13.5px;font-weight:600;background:var(--cream);outline:none;transition:.15s}
+.form-field textarea{min-height:70px;resize:vertical;font-weight:500;line-height:1.5}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--maroon-l);background:#fff;
+  box-shadow:0 0 0 3px rgba(155,48,64,.09)}
+.form-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:6px}
+.add-form{display:none;background:var(--cream);border:1px dashed var(--border);border-radius:12px;padding:16px;margin-bottom:14px}
+.add-form.open{display:block;animation:fade .2s}
+.filter-row{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px}
+.filter-row select,.filter-row input{padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;
+  font-weight:600;background:var(--paper);outline:none}
+.hint{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4}
+
+.btn{padding:10px 16px;border-radius:10px;font-size:13px;font-weight:700;transition:.15s;white-space:nowrap;display:inline-flex;
+  align-items:center;gap:6px}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{background:var(--maroon);color:var(--gold-soft)}
+.btn-primary:hover{background:var(--maroon-d)}
+.btn-ghost{background:var(--cream2);color:var(--maroon);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--gold-soft)}
+.btn-gold{background:var(--gold);color:#3D0B11}
+.btn-danger{background:var(--danger-bg);color:var(--danger);border:1px solid #F0C9C5}
+.btn-sm{padding:6px 11px;font-size:12px;border-radius:8px}
+
+.badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.2px}
+.b-green{background:var(--ok-bg);color:var(--ok)}
+.b-red{background:var(--danger-bg);color:var(--danger)}
+.b-yellow{background:var(--warn-bg);color:var(--warn)}
+.b-gray{background:#EFE7D8;color:var(--muted)}
+.b-maroon{background:#F6E7E9;color:var(--maroon)}
+.b-free{background:#8A5A18;color:#FFF3DA;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}
+
+/* program chips */
+.prog-bar{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
+.prog-chip{padding:8px 14px;border-radius:999px;border:1.5px solid var(--border);background:var(--paper);
+  font-size:12.5px;font-weight:700;color:var(--muted);transition:.15s;display:flex;align-items:center;gap:7px}
+.prog-chip:hover{border-color:var(--maroon-l);color:var(--maroon)}
+.prog-chip.active{background:var(--maroon);border-color:var(--maroon);color:var(--gold-soft)}
+.prog-chip .cnt{background:rgba(0,0,0,.09);padding:1px 7px;border-radius:999px;font-size:11px}
+.prog-chip.active .cnt{background:rgba(255,255,255,.22)}
+
+/* murid cards */
+.prog-group{margin-bottom:22px}
+.prog-title{display:flex;align-items:center;gap:10px;margin-bottom:11px;padding-bottom:8px;border-bottom:2px solid var(--gold-soft)}
+.prog-title h4{font-family:'Fraunces',serif;font-size:15px;font-weight:800;color:var(--maroon)}
+.prog-title .n{font-size:11px;font-weight:800;color:var(--muted);background:var(--cream2);padding:2px 9px;border-radius:999px}
+.murid-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:12px}
+.batch-block{margin-bottom:14px;padding-left:12px;border-left:3px solid var(--gold-soft)}
+.batch-head{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.batch-tag{background:var(--maroon);color:var(--gold-soft);padding:3px 12px;border-radius:999px;font-size:11.5px;font-weight:800;letter-spacing:.3px}
+.batch-n{font-size:11px;font-weight:700;color:var(--muted)}
+.mode-tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10.5px;font-weight:800;letter-spacing:.2px}
+.mode-on{background:#E7F0F3;color:#1F6070}
+.mode-off{background:var(--gold-soft);color:#7A5417}
+.murid-card{background:var(--paper);border:1px solid var(--border);border-radius:13px;padding:15px;box-shadow:var(--shadow);
+  transition:.16s;position:relative}
+.murid-card:hover{transform:translateY(-2px);border-color:var(--maroon-l);box-shadow:0 10px 26px -12px rgba(85,16,23,.32)}
+.mc-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:11px}
+.mc-av{width:40px;height:40px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(150deg,var(--maroon-l),var(--maroon-d));color:var(--gold-soft);
+  font-family:'Fraunces',serif;font-size:16px;font-weight:900}
+.mc-name{font-size:14.5px;font-weight:800;line-height:1.25}
+.mc-prog{font-size:11.5px;color:var(--muted);font-weight:700;margin-top:2px}
+.mc-rows{display:flex;flex-direction:column;gap:6px;font-size:12px;padding-top:10px;border-top:1px dashed var(--border)}
+.mc-row{display:flex;justify-content:space-between;gap:10px}
+.mc-row span:first-child{color:var(--muted);font-weight:600}
+.mc-row span:last-child{font-weight:700;text-align:right}
+.quota{margin-top:11px}
+.quota-bar{height:7px;border-radius:99px;background:var(--cream2);overflow:hidden}
+.quota-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--maroon-l),var(--maroon));transition:width .4s}
+.quota-fill.low{background:linear-gradient(90deg,#D98324,var(--danger))}
+.quota-meta{display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:var(--muted);margin-top:5px}
+.mc-actions{display:flex;gap:5px;margin-top:12px}
+.mc-actions .btn{flex:1;justify-content:center;padding:6px 4px;font-size:11.5px;gap:3px}
+
+/* materi inputs */
+.materi-box{background:var(--cream);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px}
+.materi-box h5{font-size:11px;font-weight:800;color:var(--maroon);text-transform:uppercase;letter-spacing:.6px;margin-bottom:11px}
+.materi-line{display:grid;grid-template-columns:132px 1fr;gap:10px;align-items:center;margin-bottom:8px}
+.materi-line:last-child{margin-bottom:0}
+.materi-lbl{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700}
+.materi-lbl .zh{font-size:14px;color:var(--maroon)}
+.materi-line input{padding:9px 11px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-weight:600;
+  background:var(--paper);outline:none;width:100%}
+.materi-line input:focus{border-color:var(--maroon-l);box-shadow:0 0 0 3px rgba(155,48,64,.09)}
+
+/* toggle sesi tipe */
+.tipe-toggle{display:flex;gap:0;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;background:var(--cream)}
+.tipe-toggle button{flex:1;padding:10px 8px;font-size:12.5px;font-weight:800;color:var(--muted);transition:.15s}
+.tipe-toggle button.active{background:var(--maroon);color:var(--gold-soft)}
+.tipe-toggle button.active.free{background:linear-gradient(135deg,var(--gold),#9A6A28);color:#FFF8E8}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(90px);background:var(--ink);color:var(--cream);
+  padding:12px 20px;border-radius:11px;font-size:13px;font-weight:700;z-index:999;opacity:0;transition:.28s;max-width:88vw;text-align:center}
+.toast.show{transform:translateX(-50%);opacity:1}
+.toast.success{background:var(--ok)} .toast.error{background:var(--danger)}
+.spinner{display:inline-block;width:16px;height:16px;border:2.5px solid var(--border);border-top-color:var(--maroon);
+  border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.modal{position:fixed;inset:0;background:rgba(44,26,28,.55);z-index:800;display:none;align-items:center;justify-content:center;padding:18px}
+.modal.open{display:flex}
+.modal-box{background:var(--paper);border-radius:16px;padding:22px;max-width:520px;width:100%;max-height:88vh;overflow-y:auto;
+  box-shadow:0 30px 70px -20px rgba(0,0,0,.5)}
+.modal-box h3{font-family:'Fraunces',serif;font-size:17px;font-weight:800;margin-bottom:15px}
+
+.wa-preview{background:#EFE7DA;border:1px solid var(--border);border-radius:12px;padding:14px;font-size:12.5px;
+  line-height:1.65;white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Menlo,monospace;max-height:300px;overflow-y:auto}
+
+/* ══ LAPORAN BULANAN — print ready ══════════════════════ */
+.report-shell{background:#C9BBA4;padding:22px 12px;border-radius:14px;overflow-x:auto}
+#printArea{background:#fff;width:210mm;min-height:auto;margin:0 auto;padding:16mm 15mm;color:#1a1a1a;
+  box-shadow:0 14px 40px -14px rgba(0,0,0,.45)}
+.rep-head{text-align:center;border-bottom:3px double var(--maroon);padding-bottom:12px;margin-bottom:16px}
+.rep-brandline{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:11px}
+.rep-logo{height:68px;width:auto;max-width:82%;object-fit:contain}
+.rep-mark{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+  background:var(--maroon);color:var(--gold-soft);font-family:'Noto Serif SC',serif;font-size:18px;font-weight:700}
+.rep-brand{font-family:'Fraunces',serif;font-size:16px;font-weight:900;color:var(--maroon);letter-spacing:.3px}
+.rep-brand small{display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:9px;font-weight:700;
+  color:var(--gold);letter-spacing:2.4px;text-transform:uppercase;margin-top:1px}
+.rep-h1{font-family:'Noto Serif SC',serif;font-size:20px;font-weight:700;color:var(--maroon)}
+.rep-h2{font-size:12px;font-weight:700;color:#555;letter-spacing:.4px;margin-top:2px}
+.rep-info{display:grid;grid-template-columns:1fr 1fr;gap:6px 22px;font-size:11.5px;margin-bottom:16px;
+  background:#FBF6EC;border:1px solid var(--border);border-radius:8px;padding:12px 14px}
+.rep-info div{display:flex;gap:6px}
+.rep-info b{color:#444;font-weight:700;min-width:118px;flex-shrink:0}
+.rep-info span{font-weight:600;color:#111}
+.rep-sec{font-family:'Noto Serif SC',serif;font-size:13.5px;font-weight:700;color:var(--maroon);margin:16px 0 8px;
+  padding-left:9px;border-left:4px solid var(--gold)}
+table.rep{width:100%;min-width:0;border-collapse:collapse;font-size:10.5px}
+table.rep th{background:var(--maroon);color:#FFF6E6;padding:7px 6px;text-align:center;font-weight:700;
+  border:1px solid var(--maroon);text-transform:none;letter-spacing:0;font-size:10px;line-height:1.35}
+table.rep th .zh{display:block;font-family:'Noto Serif SC',serif;font-size:11px}
+table.rep td{border:1px solid #D8CBB4;padding:6px 7px;vertical-align:top;background:#fff}
+table.rep tbody tr:nth-child(even) td{background:#FCF9F2}
+table.rep tbody tr:hover td{background:#FCF9F2}
+.rep-c{text-align:center}
+.mat-line{display:flex;gap:5px;line-height:1.5}
+.mat-line b{font-weight:700;color:var(--maroon);white-space:nowrap;font-size:10px}
+.rep-free{display:inline-block;background:var(--gold);color:#fff;padding:1px 7px;border-radius:4px;font-weight:800;font-size:9.5px}
+.rep-foot{margin-top:20px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:space-between;
+  align-items:flex-end;font-size:10px;color:#666;gap:20px}
+.rep-sign{text-align:center;min-width:210px}
+.rep-sign-lbl{font-size:9.5px;color:#777}
+/* Ruang tanda tangan: TTD di tengah, stempel menimpa sedikit di kanan —
+   seperti dokumen yang dicap setelah ditandatangani. */
+.rep-sign-area{position:relative;height:58px}
+.rep-ttd{position:absolute;left:50%;bottom:-2px;transform:translateX(-68%);height:50px;width:auto}
+.rep-cap{position:absolute;right:-4px;bottom:4px;height:56px;width:auto;opacity:.92;transform:rotate(-6deg)}
+.rep-sign .n{border-top:1px solid #999;padding-top:4px;font-weight:700;color:#333;position:relative;z-index:1}
+.rep-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:14px 0 4px}
+.rep-sum{border:1px solid var(--border);border-radius:7px;padding:9px 11px;background:#FBF6EC}
+.rep-sum .v{font-family:'Fraunces',serif;font-size:19px;font-weight:900;color:var(--maroon);line-height:1}
+.rep-sum .k{font-size:9.5px;font-weight:700;color:#777;text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
+
+@media print{
+  @page{size:A4;margin:0}
+  body{background:#fff}
+  .app-header,.tab-nav,.no-print,.toast{display:none!important}
+  .app-content{padding:0;max-width:none}
+  .report-shell{background:none;padding:0;border-radius:0;overflow:visible}
+  #printArea{width:auto;box-shadow:none;padding:12mm 13mm;margin:0}
+  .tab-page{display:none!important}
+  .tab-page.active{display:block!important}
+  table.rep tbody tr{break-inside:avoid}
+  .rep-sec{break-after:avoid}
+}
+@media(max-width:640px){
+  .hdr-label{display:none}
+  .hdr-logo{height:30px}
+  .app-header{gap:10px;padding:0 12px}
+  .hdr-pill{padding:6px 10px;font-size:10.5px}
+  .form-row,.rep-info{grid-template-columns:1fr}
+  .materi-line{grid-template-columns:1fr;gap:5px}
+  .app-content{padding:16px 12px 50px}
+  #printArea{width:100%;padding:14px}
+  .rep-summary{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ APP ════════════════════════════════════════════════ -->
+<div id="appShell">
+  <header class="app-header">
+    <img src="logo.png" alt="Mandarin Cincay" class="hdr-logo"
+         onerror="this.style.display='none';document.getElementById('hdrFb').style.display='flex'">
+    <div class="hdr-fb" id="hdrFb">
+      <span class="mark-sm">易</span>
+      <span><span class="app-title">Mandarin Cincay</span><span class="app-sub">Belajar Mandarin? Cincay lah!</span></span>
+    </div>
+    <span class="hdr-label">Panel Admin · 管理系统<span id="hdrBuild" class="hdr-build"></span></span>
+    <div class="header-right"><span class="hdr-pill" id="hdrStatus">Memuat data…</span></div>
+  </header>
+
+  <nav class="tab-nav">
+    <button class="tab-btn active" onclick="showTab('dashboard',this)">📊 Dashboard</button>
+    <button class="tab-btn" onclick="showTab('murid',this)">🎓 Data Murid</button>
+    <button class="tab-btn" onclick="showTab('sesi',this)">📚 Input Sesi</button>
+    <button class="tab-btn" onclick="showTab('laporan',this)">📄 Laporan Bulanan</button>
+    <button class="tab-btn" onclick="showTab('invoice',this)">🧾 Invoice</button>
+    <button class="tab-btn" onclick="showTab('laoshi',this)">👩‍🏫 Laoshi</button>
+  </nav>
+
+  <div class="app-content">
+
+    <!-- ── DASHBOARD ─────────────────────────────────── -->
+    <div class="tab-page active" id="tab-dashboard">
+      <div class="grid-4" style="margin-bottom:16px">
+        <div class="stat-card"><div class="s-icon">🎓</div><div class="s-val" id="dTotal">–</div><div class="s-label">Total Murid</div></div>
+        <div class="stat-card g"><div class="s-icon">✅</div><div class="s-val" id="dAktif">–</div><div class="s-label">Murid Aktif</div></div>
+        <div class="stat-card b"><div class="s-icon">📚</div><div class="s-val" id="dSesi">–</div><div class="s-label">Sesi Bulan Ini</div></div>
+        <div class="stat-card y"><div class="s-icon">🎁</div><div class="s-val" id="dFree">–</div><div class="s-label">Sesi Free Bln Ini</div></div>
+      </div>
+
+      <div class="section-card">
+        <div class="card-head"><h3>⚠️ Kuota Hampir Habis</h3><span class="zh-tag">课时不足</span></div>
+        <div class="hint" style="margin-bottom:10px">Murid dengan sisa sesi ≤ 3 — saatnya tawarkan perpanjangan paket.</div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Murid</th><th>Program</th><th>Laoshi</th><th>Sisa Sesi</th><th></th></tr></thead>
+          <tbody id="lowTbody"><tr><td colspan="5" class="empty"><span class="spinner"></span></td></tr></tbody></table>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="card-head"><h3>📈 Rekap Per Program</h3><span class="zh-tag">课程统计</span></div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Program</th><th>Jumlah Murid</th><th>Sesi Bulan Ini</th><th>Total Sisa Sesi</th></tr></thead>
+          <tbody id="progTbody"><tr><td colspan="4" class="empty"><span class="spinner"></span></td></tr></tbody></table>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="card-head"><h3>👩‍🏫 Rekap Per Laoshi</h3><span class="zh-tag">老师统计</span></div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Laoshi</th><th>Murid</th><th>Sesi Bulan Ini</th><th>Sesi Free</th></tr></thead>
+          <tbody id="laoshiRekapTbody"><tr><td colspan="4" class="empty"><span class="spinner"></span></td></tr></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── DATA MURID ────────────────────────────────── -->
+    <div class="tab-page" id="tab-murid">
+      <div class="section-card">
+        <div class="card-head">
+          <h3>🎓 Data Murid</h3><span class="zh-tag">学生资料</span>
+          <button class="btn btn-ghost btn-sm" onclick="loadMurid(true)">🔄 Muat Ulang</button>
+          <button class="btn btn-primary" onclick="openMuridForm()">➕ Tambah Murid</button>
+        </div>
+
+        <div class="add-form" id="form-murid">
+          <h4 style="font-size:13px;font-weight:800;margin-bottom:13px" id="muridFormTitle">Tambah Murid Baru</h4>
+          <input type="hidden" id="fMId">
+          <div class="form-row">
+            <div class="form-field"><label>Nama Murid</label><input type="text" id="fMNama" placeholder="Nama lengkap..."></div>
+            <div class="form-field"><label>Program Kelas</label><select id="fMProgram" onchange="onMuridProgramChange()"></select>
+              <div class="hint">Isi dropdown ini diatur di sheet <b>Master</b> pada Google Sheet — tambah program baru di sana, lalu klik <b>Muat Ulang</b>.</div>
+            </div>
+          </div>
+          <div class="form-row-3">
+            <div class="form-field"><label>Mode Kelas</label><select id="fMMode"></select></div>
+            <div class="form-field" id="fMBatchWrap">
+              <label>Batch / Rombongan</label>
+              <input type="text" id="fMBatch" list="batchPresets" placeholder="mis. SP I">
+              <datalist id="batchPresets"></datalist>
+              <div class="hint">Murid dengan batch sama tampil satu grup. Ketik nama baru untuk membuat batch baru.</div>
+            </div>
+            <div class="form-field"><label>Laoshi / 老师</label><select id="fMGuru"><option value="">Pilih Laoshi...</option></select></div>
+          </div>
+          <div class="form-row">
+            <div class="form-field"><label>Tanggal Mulai Kelas</label><input type="date" id="fMTglMulai"></div>
+            <div class="form-field"><label>Status</label><select id="fMAktif"><option value="aktif">Aktif</option><option value="nonaktif">Nonaktif</option></select></div>
+          </div>
+          <div class="form-row-3">
+            <div class="form-field">
+              <label>Paket yang Diambil</label>
+              <input type="text" id="fMPaket" list="paketPresets" placeholder="2 Months (16x - 16h)">
+              <datalist id="paketPresets"></datalist>
+            </div>
+            <div class="form-field"><label>Total Sesi</label><input type="number" id="fMTotalSesi" min="1" value="16" list="sesiPresets">
+              <datalist id="sesiPresets"></datalist></div>
+            <div class="form-field"><label>Fee per Sesi (Rp)</label><input type="number" id="fMFee" placeholder="150000"></div>
+          </div>
+          <div class="form-row-3">
+            <div class="form-field"><label>WA Orang Tua / Murid</label><input type="tel" id="fMWaOrtu" placeholder="08xxxxxxxxxx"></div>
+            <div class="form-field"><label>WA Laporan <span style="font-weight:500;text-transform:none">(opsional)</span></label><input type="tel" id="fMWaLaporan" placeholder="kosong = sama"></div>
+          </div>
+          <div class="form-row" style="grid-template-columns:1fr">
+            <div class="form-field"><label>Catatan</label><input type="text" id="fMCatatan" placeholder="Catatan internal (opsional)..."></div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" onclick="saveMurid()">💾 Simpan</button>
+            <button class="btn btn-ghost" onclick="closeMuridForm()">Batal</button>
+          </div>
+        </div>
+
+        <div class="prog-bar" id="progChips"></div>
+        <div id="muridWrap"><div class="empty"><span class="spinner"></span></div></div>
+      </div>
+    </div>
+
+    <!-- ── INPUT SESI ────────────────────────────────── -->
+    <div class="tab-page" id="tab-sesi">
+      <div class="section-card">
+        <div class="card-head"><h3>📚 Input Sesi Kelas</h3><span class="zh-tag">上课记录</span></div>
+        <div class="hint" style="margin-bottom:14px">Satu record = satu pertemuan. Sesi <b>Reguler</b> memotong kuota paket, sesi <b>FREE</b> tidak.</div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Catat Untuk</label>
+            <div class="tipe-toggle">
+              <button id="modeSatuan" class="active" onclick="setInputMode('satuan')">1 Murid</button>
+              <button id="modeBatch" onclick="setInputMode('batch')">👥 1 Batch</button>
+            </div>
+          </div>
+          <div class="form-field" id="wrapSMurid"><label>Murid</label><select id="fSMurid" onchange="onSesiMuridChange()"><option value="">Pilih Murid...</option></select></div>
+          <div class="form-field" id="wrapSBatch" style="display:none">
+            <label>Batch</label><select id="fSBatch" onchange="onSesiBatchChange()"><option value="">Pilih Batch...</option></select>
+            <div class="hint" id="batchAnggota">Tiap anggota tetap dapat catatan sesi sendiri.</div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label>Laoshi / 老师</label><select id="fSGuru"><option value="">Pilih Laoshi...</option></select></div>
+        </div>
+        <div class="form-row-3">
+          <div class="form-field"><label>Tanggal</label><input type="date" id="fSTanggal"></div>
+          <div class="form-field"><label>Jam Mulai</label><input type="time" id="fSJamMulai" value="10:00" onchange="hitungDurasi()"></div>
+          <div class="form-field"><label>Jam Selesai</label><input type="time" id="fSJamSelesai" value="11:00" onchange="hitungDurasi()"></div>
+        </div>
+        <div class="form-row-3">
+          <div class="form-field">
+            <label>Potong Kuota</label>
+            <select id="fSDurasi" onchange="onDurasiChange()">
+              <option value="0.5">½ sesi (30 menit)</option>
+              <option value="1" selected>1 sesi (60 menit)</option>
+              <option value="1.5">1½ sesi (90 menit)</option>
+              <option value="2">2 sesi (120 menit)</option>
+              <option value="2.5">2½ sesi (150 menit)</option>
+              <option value="3">3 sesi (180 menit)</option>
+            </select>
+            <div class="hint" id="durasiHint">Terisi otomatis dari jam mulai &amp; selesai — bisa diubah manual.</div>
+          </div>
+        </div>
+        <div class="form-row-3">
+          <div class="form-field"><label>Program</label><select id="fSProgram"></select></div>
+          <div class="form-field"><label>Mode</label><select id="fSMode"></select></div>
+          <div class="form-field">
+            <label>Tipe Sesi</label>
+            <div class="tipe-toggle">
+              <button id="tipeReguler" class="active" onclick="setTipe('reguler')">Reguler</button>
+              <button id="tipeFree" onclick="setTipe('free')">🎁 FREE</button>
+            </div>
+            <div class="hint" id="tipeHint">Memotong kuota paket murid.</div>
+          </div>
+        </div>
+
+        <div class="materi-box">
+          <h5>Materi Pembelajaran · 学习内容 Material</h5>
+          <div id="materiFields"></div>
+        </div>
+
+        <div class="form-row-3">
+          <div class="form-field"><label>Skor <span style="font-weight:500;text-transform:none">(opsional)</span></label><input type="number" id="fSSkor" placeholder="190"></div>
+          <div class="form-field"><label>Skor Maksimal</label><input type="number" id="fSSkorMax" placeholder="200"></div>
+          <div class="form-field"><label>Catatan Laoshi</label><input type="text" id="fSCatatan" placeholder="Catatan untuk orang tua..."></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="saveSesi()">💾 Simpan Sesi</button>
+          <button class="btn btn-ghost" onclick="resetSesiForm()">↺ Reset</button>
+          <span id="sesiQuotaInfo" style="font-size:12px;font-weight:700;color:var(--muted);align-self:center"></span>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="card-head"><h3>🗂 Riwayat Sesi</h3><span class="zh-tag">记录列表</span></div>
+        <div class="filter-row">
+          <select id="filtSesiMurid"><option value="">Semua Murid</option></select>
+          <input type="month" id="filtSesiBulan">
+          <button class="btn btn-ghost btn-sm" onclick="loadSesiList()">🔍 Filter</button>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Tanggal</th><th>Jam</th><th>Murid</th><th>Program</th><th>Materi</th><th>Skor</th><th>Potong</th><th>Tipe</th><th></th></tr></thead>
+          <tbody id="sesiTbody"><tr><td colspan="9" class="empty">Pilih filter lalu klik Filter</td></tr></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── LAPORAN BULANAN ───────────────────────────── -->
+    <div class="tab-page" id="tab-laporan">
+      <div class="section-card no-print">
+        <div class="card-head"><h3>📄 Laporan Bulanan</h3><span class="zh-tag">学生学习进度报告</span></div>
+        <div class="filter-row">
+          <select id="repMurid"><option value="">Pilih Murid...</option></select>
+          <input type="month" id="repBulan">
+          <select id="repScope">
+            <option value="bulan">Hanya bulan terpilih</option>
+            <option value="all">Semua sesi (sejak awal)</option>
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="buildReport()">📄 Tampilkan</button>
+          <button class="btn btn-gold btn-sm" onclick="window.print()">🖨 Print / Save PDF</button>
+          <button class="btn btn-ghost btn-sm" onclick="copyReportWA()">📱 Ringkasan WA</button>
+        </div>
+        <div class="hint">Tips: di dialog print pilih <b>Save as PDF</b>, ukuran <b>A4</b>, dan aktifkan <b>Background graphics</b> supaya warna ikut tercetak.</div>
+      </div>
+
+      <div class="report-shell" id="reportShell">
+        <div id="printArea">
+          <div class="empty" style="padding:60px 20px">Pilih murid dan bulan, lalu klik <b>Tampilkan</b>.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── INVOICE ───────────────────────────────────── -->
+    <div class="tab-page" id="tab-invoice">
+      <div class="grid-2">
+        <div class="section-card">
+          <div class="card-head"><h3>🧾 Generate Invoice</h3><span class="zh-tag">账单</span></div>
+          <div class="form-field" style="margin-bottom:11px"><label>Murid</label><select id="invMurid" onchange="onInvChange()"><option value="">Pilih Murid...</option></select></div>
+          <div class="form-row">
+            <div class="form-field"><label>Bulan</label><input type="month" id="invBulan" onchange="onInvChange()"></div>
+            <div class="form-field"><label>Jumlah Sesi Berbayar</label><input type="number" id="invSesi" min="0.5" step="0.5" oninput="updateInvPreview()"></div>
+          </div>
+          <div class="form-field" style="margin-bottom:11px"><label>Catatan</label><input type="text" id="invCatatan" placeholder="Opsional..." oninput="updateInvPreview()"></div>
+          <div class="hint" id="invAutoHint" style="margin-bottom:12px"></div>
+          <button class="btn btn-primary" onclick="doGenerateInvoice()">🧾 Generate Invoice</button>
+        </div>
+        <div class="section-card">
+          <div class="card-head"><h3>📱 Preview WhatsApp</h3></div>
+          <div class="wa-preview" id="waInvText">Pilih murid dan bulan untuk melihat preview.</div>
+          <div style="display:flex;gap:8px;margin-top:11px">
+            <button class="btn btn-ghost btn-sm" onclick="copyInvWA()">📋 Salin</button>
+            <button class="btn btn-primary btn-sm" onclick="kirimInvWA()">📱 Kirim WA</button>
+          </div>
+        </div>
+      </div>
+      <div class="section-card">
+        <div class="card-head"><h3>📋 Riwayat Invoice</h3>
+          <button class="btn btn-ghost btn-sm" onclick="loadInvoice()">🔄 Muat Ulang</button></div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Murid</th><th>Bulan</th><th>Sesi</th><th>Total</th><th>Status</th><th></th></tr></thead>
+          <tbody id="invTbody"><tr><td colspan="6" class="empty"><span class="spinner"></span></td></tr></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── LAOSHI ────────────────────────────────────── -->
+    <div class="tab-page" id="tab-laoshi">
+      <div class="section-card">
+        <div class="card-head"><h3>👩‍🏫 Data Laoshi</h3><span class="zh-tag">老师资料</span>
+          <button class="btn btn-primary" onclick="toggleForm('form-guru')">➕ Tambah Laoshi</button></div>
+        <div class="add-form" id="form-guru">
+          <input type="hidden" id="fGId">
+          <div class="form-row">
+            <div class="form-field"><label>Nama Laoshi</label><input type="text" id="fGNama" placeholder="Nama lengkap..."></div>
+            <div class="form-field"><label>ID Karyawan</label><input type="text" id="fGIdKar" placeholder="MC-001"></div>
+          </div>
+          <div class="form-row-3">
+            <div class="form-field"><label>Jabatan</label><input type="text" id="fGJabatan" value="Freelance Teacher"></div>
+            <div class="form-field"><label>Honor Offline / Sesi</label><input type="number" id="fGHonorOnsite" placeholder="100000"></div>
+            <div class="form-field"><label>Honor Online / Sesi</label><input type="number" id="fGHonorOnline" placeholder="80000"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-field"><label>Tanggal Bergabung</label><input type="date" id="fGTgl"></div>
+            <div class="form-field"><label>No. WhatsApp</label><input type="tel" id="fGWa" placeholder="08xxxxxxxxxx"></div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" onclick="saveGuru()">💾 Simpan</button>
+            <button class="btn btn-ghost" onclick="closeGuruForm()">Batal</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Nama</th><th>ID</th><th>Honor Offline</th><th>Honor Online</th><th>WA</th><th></th></tr></thead>
+          <tbody id="guruTbody"><tr><td colspan="6" class="empty"><span class="spinner"></span></td></tr></tbody></table>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="card-head"><h3>💵 Slip Gaji</h3><span class="zh-tag">工资单</span></div>
+        <div class="filter-row">
+          <select id="slipGuru"><option value="">Pilih Laoshi...</option></select>
+          <input type="month" id="slipBulan">
+          <button class="btn btn-primary btn-sm" onclick="hitungSlip()">🧮 Hitung</button>
+        </div>
+        <div id="slipResult" class="empty">Pilih laoshi dan bulan, lalu klik Hitung.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ MODAL DETAIL MURID ═════════════════════════════════ -->
+<div class="modal" id="modalMurid" onclick="if(event.target===this)closeModal('modalMurid')">
+  <div class="modal-box" id="modalMuridBody"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   STATE & HELPERS
+   ══════════════════════════════════════════════════════════ */
+let allMurid = [];      // hasil getRekap() — sudah termasuk sisa sesi
+let allGuru  = [];
+let allSesi  = [];
+let tabLoaded = {};
+let sesiTipe = 'reguler';
+let inputMode = 'satuan';   // 'satuan' | 'batch'
+
+/* Isi dropdown — diambil dari sheet "Master" saat halaman dibuka.
+   Nilai awal di bawah cuma cadangan kalau sheet belum terbaca. */
+let PROGRAMS       = DEF_PROGRAMS.slice();
+let MODES          = DEF_MODES.slice();
+let BATCH_PRESETS  = DEF_BATCH_PRESETS.slice();
+let BATCH_PROGRAMS = DEF_BATCH_PROGRAMS.slice();
+let PAKET_LIST     = DEF_PAKET.slice();
+let TOTAL_SESI_LIST= DEF_TOTAL_SESI.slice();
+let activeProgram = '';
+let editMuridId = '';
+let reportData = null;
+let invMuridObj = null;
+
+const muridById = id => allMurid.find(m => m.id === id) || null;
+const guruById  = id => allGuru.find(g => g.id === id) || null;
+const fmtRp   = n => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
+const today   = () => new Date().toISOString().slice(0, 10);
+const thisMonth = () => new Date().toISOString().slice(0, 7);
+const esc = s => String(s == null ? '' : s)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const jsStr = s => String(s == null ? '' : s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+
+function fmtDate(s){
+  if(!s) return '–';
+  const d = new Date(s + (String(s).length === 10 ? 'T00:00:00' : ''));
+  if (isNaN(d)) return s;
+  return d.toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' });
+}
+function fmtDateShort(s){
+  if(!s) return '–';
+  const d = new Date(s + 'T00:00:00');
+  if (isNaN(d)) return s;
+  const bl = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return ('0'+d.getDate()).slice(-2) + '-' + bl[d.getMonth()] + '-' + String(d.getFullYear()).slice(-2);
+}
+function fmtBulan(s){
+  if(!s) return '–';
+  const p = String(s).split('-');
+  return new Date(p[0], p[1]-1, 1).toLocaleString('id-ID', { month:'long', year:'numeric' });
+}
+function initials(n){
+  return String(n||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+}
+function showToast(msg, type=''){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'show ' + type;
+  clearTimeout(t._t); t._t = setTimeout(() => t.className = 'toast', 3200);
+}
+function toggleForm(id){ document.getElementById(id).classList.toggle('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+function waLink(no, text){
+  const w = String(no||'').replace(/\D/g,'');
+  if(!w) { showToast('Nomor WA tidak tersedia','error'); return; }
+  const n = w.startsWith('0') ? '62' + w.slice(1) : (w.startsWith('62') ? w : '62' + w);
+  window.open('https://wa.me/' + n + '?text=' + encodeURIComponent(text), '_blank');
+}
+
+/* ══════════════════════════════════════════════════════════
+   BOOT
+   ══════════════════════════════════════════════════════════ */
+async function initApp(){
+  // default tanggal
+  document.getElementById('fMTglMulai').value  = today();
+  document.getElementById('fSTanggal').value   = today();
+  document.getElementById('filtSesiBulan').value = thisMonth();
+  document.getElementById('repBulan').value    = thisMonth();
+  document.getElementById('invBulan').value    = thisMonth();
+  document.getElementById('slipBulan').value   = thisMonth();
+
+  const hdr = document.getElementById('hdrStatus');
+  // Tampilkan versi build + jumlah kategori materi, supaya ketahuan kalau
+  // browser masih memakai api.js lama dari cache.
+  document.getElementById('hdrBuild').textContent =
+    (typeof APP_BUILD === 'string' ? APP_BUILD : 'versi lama') + ' · ' + MATERI.length + ' materi';
+
+  renderMateriFields();
+  renderDropdowns();   // pakai nilai cadangan dulu supaya form tidak kosong
+
+  try {
+    const res = await Promise.all([API.getRekap(), API.getGuru(), API.getSesi({}), API.getMaster()]);
+    allMurid = res[0] || []; allGuru = res[1] || []; allSesi = res[2] || [];
+    terapkanMaster(res[3]);
+    populateSelects();
+    renderDashboard();
+    hdr.textContent = allMurid.length + ' murid · ' + allGuru.length + ' laoshi';
+  } catch(e){
+    hdr.textContent = '⚠️ Tidak tersambung';
+    showToast('Gagal memuat data: ' + e.message, 'error');
+
+    const id = (String(SCRIPT_URL).match(/\/s\/([^/]+)\//) || [])[1] || '(tidak terbaca)';
+
+    // Dua penyebab yang berbeda, penanganannya juga berbeda:
+    //  - "Action tidak dikenal: undefined" → permintaan sampai tapi isinya dibuang
+    //    Google karena deployment minta login. Perbaikannya di setelan akses.
+    //  - "Failed to fetch" → tidak nyambung sama sekali; biasanya SCRIPT_URL salah.
+    // Dua gejala berbeda, penyebabnya sama — deployment masih minta login:
+    //   "Action tidak dikenal: undefined"  → permintaan sampai tapi isinya dibuang
+    //   "<!DOCTYPE ... is not valid JSON"  → yang dibalas halaman login, bukan data
+    const kosong = /Action tidak dikenal:\s*undefined/i.test(e.message)
+                || /<!DOCTYPE|Unexpected token '<'|is not valid JSON/i.test(e.message);
+    const saran = kosong
+      ? `<b>Penyebab:</b> deployment Apps Script masih minta login Google.<br>
+         Buka Apps Script → <b>Deploy → Manage deployments → ✏️ Edit</b> →
+         ubah <b>Who has access</b> menjadi <b>Anyone</b> → <b>Deploy</b>.<br>
+         URL tidak akan berubah. Setelah itu refresh halaman ini (Ctrl+Shift+R).`
+      : `<b>Penyebab:</b> halaman tidak bisa menghubungi Apps Script.<br>
+         Cek <b>SCRIPT_URL</b> di <b>api.js</b> — pastikan sama dengan URL /exec deployment Anda,
+         lalu upload ulang file itu.`;
+
+    document.querySelectorAll('#lowTbody,#progTbody,#laoshiRekapTbody').forEach(t =>
+      t.innerHTML = `<tr><td colspan="5" class="empty" style="text-align:left;line-height:1.75">
+        <b style="color:var(--danger)">⚠️ ${esc(e.message)}</b><br>
+        <span style="font-size:12px">Data di Google Sheet <b>tidak hilang</b> — halaman ini hanya gagal membacanya.</span><br>
+        <span style="font-size:12px">Deployment yang dipakai: <code style="background:var(--cream2);padding:2px 6px;border-radius:4px">…${esc(id.slice(-16))}</code></span>
+        <div style="font-size:12px;margin-top:9px;padding:10px 12px;background:var(--cream);border-left:3px solid var(--gold);border-radius:6px">${saran}</div>
+        </td></tr>`);
+  }
+}
+
+async function refreshCore(){
+  // Master ikut dimuat ulang, jadi perubahan di sheet Master langsung terpakai
+  // begitu tombol "Muat Ulang" ditekan — tanpa perlu refresh halaman.
+  const res = await Promise.all([API.getRekap(), API.getSesi({}), API.getMaster()]);
+  allMurid = res[0] || []; allSesi = res[1] || [];
+  terapkanMaster(res[2]);
+  populateSelects();
+}
+
+function populateSelects(){
+  const mOpts = '<option value="">Pilih Murid...</option>' +
+    allMurid.slice().sort((a,b)=>String(a.nama).localeCompare(String(b.nama)))
+      .map(m => `<option value="${m.id}">${esc(m.nama)} · ${esc(m.program)}</option>`).join('');
+  ['fSMurid','repMurid','invMurid'].forEach(id => {
+    const s = document.getElementById(id); const v = s.value; s.innerHTML = mOpts; s.value = v;
+  });
+  const fs = document.getElementById('filtSesiMurid'); const fv = fs.value;
+  fs.innerHTML = '<option value="">Semua Murid</option>' + mOpts.replace(/^<option value="">.*?<\/option>/, '');
+  fs.value = fv;
+
+  const gOpts = '<option value="">Pilih Laoshi...</option>' +
+    allGuru.map(g => `<option value="${g.id}">${esc(g.nama)}</option>`).join('');
+  ['fMGuru','fSGuru','slipGuru'].forEach(id => {
+    const s = document.getElementById(id); const v = s.value; s.innerHTML = gOpts; s.value = v;
+  });
+
+  // daftar batch: preset + batch yang sudah dipakai murid
+  const bs = allBatches();
+  document.getElementById('batchPresets').innerHTML = bs.map(b => `<option value="${esc(b)}">`).join('');
+  const sb = document.getElementById('fSBatch'); const sbv = sb.value;
+  sb.innerHTML = '<option value="">Pilih Batch...</option>' + bs
+    .filter(b => anggotaBatch(b).length)
+    .map(b => `<option value="${esc(b)}">${esc(b)} (${anggotaBatch(b).length} murid)</option>`).join('');
+  sb.value = sbv;
+}
+
+/** Pindahkan isi sheet Master ke variabel dropdown. Kolom yang kosong
+ *  di sheet diabaikan — nilai cadangannya yang dipakai. */
+function terapkanMaster(m){
+  if (!m) return;
+  const pakai = (arr, cadangan) => (Array.isArray(arr) && arr.length) ? arr.slice() : cadangan;
+  PROGRAMS        = pakai(m.program,             PROGRAMS);
+  MODES           = pakai(m.mode,                MODES);
+  BATCH_PRESETS   = pakai(m.batch,               BATCH_PRESETS);
+  PAKET_LIST      = pakai(m.paket,               PAKET_LIST);
+  TOTAL_SESI_LIST = pakai(m.total_sesi,          TOTAL_SESI_LIST);
+  BATCH_PROGRAMS  = pakai(m.program_pakai_batch, BATCH_PROGRAMS);
+  renderDropdowns();
+}
+
+/* Id elemen input untuk tiap kategori materi: 'mock_paper' → 'fSMockPaper' */
+const materiElId = k => 'fS' + k.split('_').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('');
+const materiEl   = k => document.getElementById(materiElId(k));
+
+/** Kolom input materi dibuat dari daftar MATERI, bukan ditulis manual di HTML —
+ *  jadi menambah kategori cukup lewat api.js + Code.gs. */
+function renderMateriFields(){
+  document.getElementById('materiFields').innerHTML = MATERI.map(k => `
+    <div class="materi-line">
+      <div class="materi-lbl"><span class="zh">${esc(k.zh)}</span> ${esc(k.id)}</div>
+      <input type="text" id="${materiElId(k.key)}" placeholder="${esc(k.ph || '')}">
+    </div>`).join('');
+}
+
+/** Tulis ulang semua <select> dan <datalist> dari variabel di atas. */
+function renderDropdowns(){
+  const progOpts = PROGRAMS.map(p => `<option value="${esc(p)}">${esc(p)}</option>`).join('');
+  const modeOpts = MODES.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
+  [['fMProgram', progOpts], ['fSProgram', progOpts],
+   ['fMMode', modeOpts],    ['fSMode', modeOpts]].forEach(([id, html]) => {
+    const s = document.getElementById(id); if (!s) return;
+    const v = s.value; s.innerHTML = html; if (v) s.value = v;
+  });
+  document.getElementById('paketPresets').innerHTML =
+    PAKET_LIST.map(p => `<option value="${esc(p)}">`).join('');
+  document.getElementById('sesiPresets').innerHTML =
+    TOTAL_SESI_LIST.map(n => `<option value="${esc(n)}">`).join('');
+  onMuridProgramChange();
+}
+
+/** Gabungan preset dan batch yang benar-benar dipakai, tanpa duplikat. */
+function allBatches(){
+  const dipakai = allMurid.map(m => (m.batch || '').trim()).filter(Boolean);
+  const out = BATCH_PRESETS.slice();
+  dipakai.forEach(b => { if (out.indexOf(b) === -1) out.push(b); });
+  return out;
+}
+function anggotaBatch(b){
+  return allMurid.filter(m => (m.batch || '').trim() === b && m.aktif !== 'nonaktif');
+}
+function onMuridProgramChange(){
+  const p = document.getElementById('fMProgram').value;
+  const perluBatch = BATCH_PROGRAMS.indexOf(p) >= 0;
+  document.getElementById('fMBatchWrap').style.opacity = perluBatch ? '1' : '.45';
+  document.getElementById('fMBatch').placeholder = perluBatch ? 'mis. SP I' : '(opsional)';
+}
+
+function showTab(name, btn){
+  document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  if (name === 'murid'  && !tabLoaded.murid)  { tabLoaded.murid = true;  loadMurid(); }
+  if (name === 'sesi'   && !tabLoaded.sesi)   { tabLoaded.sesi = true;   loadSesiList(); }
+  if (name === 'invoice'&& !tabLoaded.invoice){ tabLoaded.invoice = true;loadInvoice(); }
+  if (name === 'laoshi' && !tabLoaded.laoshi) { tabLoaded.laoshi = true; renderGuruTable(); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   DASHBOARD
+   ══════════════════════════════════════════════════════════ */
+function renderDashboard(){
+  const bln = thisMonth();
+  const sesiBln = allSesi.filter(s => String(s.tanggal).indexOf(bln) === 0);
+
+  document.getElementById('dTotal').textContent = allMurid.length;
+  document.getElementById('dAktif').textContent = allMurid.filter(m => m.aktif !== 'nonaktif').length;
+  const jml = arr => fmtSesi(arr.reduce((a,s) => a + (Number(s.durasi) || 1), 0));
+  document.getElementById('dSesi').textContent  = jml(sesiBln.filter(s => s.tipe !== 'free'));
+  document.getElementById('dFree').textContent  = jml(sesiBln.filter(s => s.tipe === 'free'));
+
+  // kuota hampir habis
+  const low = allMurid.filter(m => m.aktif !== 'nonaktif' && m.total_sesi > 0 && m.sisa_sesi <= 3)
+                      .sort((a,b) => a.sisa_sesi - b.sisa_sesi);
+  document.getElementById('lowTbody').innerHTML = low.length ? low.map(m => `
+    <tr>
+      <td><b>${esc(m.nama)}</b></td>
+      <td>${esc(m.program)}</td>
+      <td>${esc(m.laoshi) || '–'}</td>
+      <td><span class="badge ${m.sisa_sesi <= 0 ? 'b-red' : 'b-yellow'}">${m.sisa_sesi} sesi</span></td>
+      <td><button class="btn btn-ghost btn-sm" onclick="openMuridDetail('${m.id}')">Detail</button></td>
+    </tr>`).join('') : '<tr><td colspan="5" class="empty">Semua murid kuotanya masih aman 👍</td></tr>';
+
+  // per program
+  const rowsP = PROGRAMS.map(p => {
+    const ms = allMurid.filter(m => m.program === p);
+    if (!ms.length) return '';
+    const ids = ms.map(m => m.id);
+    const sb  = sesiBln.filter(s => ids.indexOf(s.murid_id) >= 0).length;
+    const sisa= ms.reduce((a,m) => a + (Number(m.sisa_sesi)||0), 0);
+    return `<tr><td><b>${p}</b></td><td>${ms.length}</td><td>${sb}</td><td>${sisa}</td></tr>`;
+  }).filter(Boolean).join('');
+  document.getElementById('progTbody').innerHTML = rowsP || '<tr><td colspan="4" class="empty">Belum ada data murid</td></tr>';
+
+  // per laoshi
+  const rowsG = allGuru.map(g => {
+    const ms = allMurid.filter(m => m.guru_id === g.id).length;
+    const ss = sesiBln.filter(s => s.guru_id === g.id);
+    return `<tr><td><b>${esc(g.nama)}</b></td><td>${ms}</td>
+            <td>${ss.filter(s=>s.tipe!=='free').length}</td>
+            <td>${ss.filter(s=>s.tipe==='free').length}</td></tr>`;
+  }).join('');
+  document.getElementById('laoshiRekapTbody').innerHTML = rowsG || '<tr><td colspan="4" class="empty">Belum ada data laoshi</td></tr>';
+}
+
+/* ══════════════════════════════════════════════════════════
+   DATA MURID — dikelompokkan per program
+   ══════════════════════════════════════════════════════════ */
+async function loadMurid(force){
+  if (force){
+    document.getElementById('muridWrap').innerHTML = '<div class="empty"><span class="spinner"></span></div>';
+    try { await refreshCore(); renderDashboard(); }
+    catch(e){ showToast('Gagal: ' + e.message, 'error'); return; }
+  }
+  renderProgChips();
+  renderMuridGroups();
+}
+
+function renderProgChips(){
+  const chips = [{ k:'', label:'Semua', n: allMurid.length }].concat(
+    PROGRAMS.map(p => ({ k:p, label:p, n: allMurid.filter(m => m.program === p).length })));
+  document.getElementById('progChips').innerHTML = chips.map(c =>
+    `<button class="prog-chip ${activeProgram === c.k ? 'active' : ''}" onclick="setProgram('${jsStr(c.k)}')">
+       ${esc(c.label)}<span class="cnt">${c.n}</span></button>`).join('');
+}
+function setProgram(p){ activeProgram = p; renderProgChips(); renderMuridGroups(); }
+
+function renderMuridGroups(){
+  const wrap = document.getElementById('muridWrap');
+  const progs = activeProgram ? [activeProgram] : PROGRAMS;
+  let html = '';
+
+  progs.forEach(p => {
+    const list = allMurid.filter(m => m.program === p)
+                         .sort((a,b) => String(a.nama).localeCompare(String(b.nama)));
+    if (!list.length) return;
+
+    let isi;
+    if (BATCH_PROGRAMS.indexOf(p) >= 0){
+      // Semi-Private: pecah lagi per batch (SP I, SP II, dst.)
+      const urut = [];
+      list.forEach(m => { const b = (m.batch||'').trim() || '— Tanpa Batch —';
+                          if (urut.indexOf(b) === -1) urut.push(b); });
+      urut.sort((a,b) => a === '— Tanpa Batch —' ? 1 : b === '— Tanpa Batch —' ? -1 : a.localeCompare(b, undefined, {numeric:true}));
+      isi = urut.map(b => {
+        const anggota = list.filter(m => ((m.batch||'').trim() || '— Tanpa Batch —') === b);
+        return `<div class="batch-block">
+          <div class="batch-head"><span class="batch-tag">${esc(b)}</span>
+            <span class="batch-n">${anggota.length} murid</span></div>
+          <div class="murid-grid">${anggota.map(muridCard).join('')}</div></div>`;
+      }).join('');
+    } else {
+      isi = `<div class="murid-grid">${list.map(muridCard).join('')}</div>`;
+    }
+
+    html += `<div class="prog-group">
+      <div class="prog-title"><h4>${esc(p)}</h4><span class="n">${list.length} murid</span></div>
+      ${isi}</div>`;
+  });
+
+  // murid tanpa program / program tak dikenal
+  const lain = allMurid.filter(m => PROGRAMS.indexOf(m.program) === -1);
+  if (lain.length && !activeProgram){
+    html += `<div class="prog-group">
+      <div class="prog-title"><h4>Lainnya / Belum Diatur</h4><span class="n">${lain.length} murid</span></div>
+      <div class="murid-grid">${lain.map(muridCard).join('')}</div></div>`;
+  }
+
+  wrap.innerHTML = html || '<div class="empty">Belum ada murid pada kategori ini. Klik <b>➕ Tambah Murid</b>.</div>';
+}
+
+function muridCard(m){
+  const total = Number(m.total_sesi) || 0;
+  const pakai = Number(m.sesi_terpakai) || 0;
+  const sisa  = Number(m.sisa_sesi) || 0;
+  const pct   = total ? Math.min(100, Math.round(pakai / total * 100)) : 0;
+  const low   = total > 0 && sisa <= 3;
+  return `<div class="murid-card">
+    <div class="mc-top">
+      <div class="mc-av">${esc(initials(m.nama))}</div>
+      <div style="flex:1;min-width:0">
+        <div class="mc-name">${esc(m.nama)}</div>
+        <div class="mc-prog">${esc(m.program || '–')}${m.batch ? ' · ' + esc(m.batch) : ''}
+          ${m.mode ? `<span class="mode-tag ${m.mode === 'Offline' ? 'mode-off' : 'mode-on'}">${esc(m.mode)}</span>` : ''}</div>
+      </div>
+      ${m.aktif === 'nonaktif' ? '<span class="badge b-gray">Nonaktif</span>' : ''}
+    </div>
+    <div class="mc-rows">
+      <div class="mc-row"><span>Laoshi</span><span>${esc(m.laoshi) || '–'}</span></div>
+      <div class="mc-row"><span>Mulai kelas</span><span>${fmtDate(m.tgl_mulai)}</span></div>
+      <div class="mc-row"><span>Paket</span><span>${esc(m.paket) || '–'}</span></div>
+      ${m.sesi_free ? `<div class="mc-row"><span>Sesi free</span><span><span class="badge b-free">${m.sesi_free}× FREE</span></span></div>` : ''}
+    </div>
+    <div class="quota">
+      <div class="quota-bar"><div class="quota-fill ${low?'low':''}" style="width:${pct}%"></div></div>
+      <div class="quota-meta"><span>${fmtSesi(pakai)} / ${fmtSesi(total)} sesi terpakai</span><span style="color:${low?'var(--danger)':'var(--maroon)'}">Sisa ${fmtSesi(sisa)}</span></div>
+    </div>
+    <div class="mc-actions">
+      <button class="btn btn-ghost btn-sm" onclick="openMuridDetail('${m.id}')">👁 Detail</button>
+      <button class="btn btn-ghost btn-sm" onclick="editMurid('${m.id}')">✏️ Edit</button>
+      <button class="btn btn-ghost btn-sm" onclick="gotoReport('${m.id}')">📄 Laporan</button>
+    </div>
+  </div>`;
+}
+
+function openMuridForm(){
+  editMuridId = '';
+  document.getElementById('muridFormTitle').textContent = 'Tambah Murid Baru';
+  ['fMNama','fMPaket','fMFee','fMWaOrtu','fMWaLaporan','fMCatatan','fMBatch'].forEach(i => document.getElementById(i).value = '');
+  onMuridProgramChange();
+  document.getElementById('fMTotalSesi').value = 16;
+  document.getElementById('fMTglMulai').value = today();
+  document.getElementById('fMAktif').value = 'aktif';
+  document.getElementById('form-murid').classList.add('open');
+  document.getElementById('fMNama').focus();
+}
+function closeMuridForm(){ document.getElementById('form-murid').classList.remove('open'); editMuridId = ''; }
+
+function editMurid(id){
+  const m = muridById(id); if(!m) return;
+  editMuridId = id;
+  document.getElementById('muridFormTitle').textContent = 'Edit Murid — ' + m.nama;
+  document.getElementById('fMNama').value      = m.nama || '';
+  document.getElementById('fMProgram').value   = m.program || PROGRAMS[0];
+  document.getElementById('fMBatch').value     = m.batch || '';
+  document.getElementById('fMMode').value      = m.mode || MODES[0];
+  document.getElementById('fMGuru').value      = m.guru_id || '';
+  onMuridProgramChange();
+  document.getElementById('fMTglMulai').value  = m.tgl_mulai || '';
+  document.getElementById('fMPaket').value     = m.paket || '';
+  document.getElementById('fMTotalSesi').value = m.total_sesi || 0;
+  document.getElementById('fMFee').value       = m.fee_per_lesson || '';
+  document.getElementById('fMWaOrtu').value    = m.wa_ortu || '';
+  document.getElementById('fMWaLaporan').value = m.wa_laporan || '';
+  document.getElementById('fMAktif').value     = m.aktif || 'aktif';
+  document.getElementById('fMCatatan').value   = m.catatan || '';
+  document.getElementById('form-murid').classList.add('open');
+  document.getElementById('form-murid').scrollIntoView({ behavior:'smooth', block:'center' });
+}
+
+async function saveMurid(){
+  const d = {
+    nama:           document.getElementById('fMNama').value.trim(),
+    program:        document.getElementById('fMProgram').value,
+    batch:          document.getElementById('fMBatch').value.trim(),
+    mode:           document.getElementById('fMMode').value,
+    guru_id:        document.getElementById('fMGuru').value,
+    tgl_mulai:      document.getElementById('fMTglMulai').value,
+    paket:          document.getElementById('fMPaket').value.trim(),
+    total_sesi:     Number(document.getElementById('fMTotalSesi').value) || 0,
+    fee_per_lesson: Number(document.getElementById('fMFee').value) || 0,
+    wa_ortu:        document.getElementById('fMWaOrtu').value.trim(),
+    wa_laporan:     document.getElementById('fMWaLaporan').value.trim(),
+    aktif:          document.getElementById('fMAktif').value,
+    catatan:        document.getElementById('fMCatatan').value.trim(),
+  };
+  if (!d.nama) return showToast('Nama murid wajib diisi', 'error');
+  try {
+    if (editMuridId) { d.id = editMuridId; await API.updateMurid(d); showToast('Data murid diperbarui', 'success'); }
+    else             { await API.addMurid(d);                        showToast('Murid ditambahkan', 'success'); }
+    closeMuridForm();
+    await refreshCore(); renderDashboard(); renderProgChips(); renderMuridGroups();
+  } catch(e){ showToast('Gagal: ' + e.message, 'error'); }
+}
+
+function openMuridDetail(id){
+  const m = muridById(id); if(!m) return;
+  const sesi = allSesi.filter(s => s.murid_id === id)
+                      .sort((a,b) => String(b.tanggal).localeCompare(String(a.tanggal)));
+  const rows = sesi.slice(0, 12).map(s => `
+    <tr><td>${fmtDateShort(s.tanggal)}</td>
+        <td>${esc(materiRingkas(s)) || '–'}</td>
+        <td>${s.tipe === 'free' ? '<span class="badge b-free">FREE</span>' : '<span class="badge b-maroon">Reguler</span>'}</td></tr>`).join('');
+
+  document.getElementById('modalMuridBody').innerHTML = `
+    <h3>${esc(m.nama)}</h3>
+    <div class="mc-rows" style="border-top:none;padding-top:0;margin-bottom:14px">
+      <div class="mc-row"><span>Program kelas</span><span>${esc(m.program) || '–'}</span></div>
+      ${m.batch ? `<div class="mc-row"><span>Batch</span><span>${esc(m.batch)}</span></div>` : ''}
+      <div class="mc-row"><span>Mode kelas</span><span>${esc(m.mode) || '–'}</span></div>
+      <div class="mc-row"><span>Laoshi</span><span>${esc(m.laoshi) || '–'}</span></div>
+      <div class="mc-row"><span>Tanggal mulai</span><span>${fmtDate(m.tgl_mulai)}</span></div>
+      <div class="mc-row"><span>Paket</span><span>${esc(m.paket) || '–'}</span></div>
+      <div class="mc-row"><span>Total sesi</span><span>${fmtSesi(m.total_sesi)}</span></div>
+      <div class="mc-row"><span>Sesi terpakai</span><span>${fmtSesi(m.sesi_terpakai)}</span></div>
+      <div class="mc-row"><span>Sisa sesi</span><span style="color:${m.sisa_sesi<=3?'var(--danger)':'var(--maroon)'}">${fmtSesi(m.sisa_sesi)}</span></div>
+      <div class="mc-row"><span>Sesi free diberikan</span><span>${fmtSesi(m.sesi_free || 0)}</span></div>
+      <div class="mc-row"><span>Fee per sesi</span><span>${fmtRp(m.fee_per_lesson)}</span></div>
+      <div class="mc-row"><span>WA</span><span>${esc(m.wa_ortu) || '–'}</span></div>
+      ${m.catatan ? `<div class="mc-row"><span>Catatan</span><span>${esc(m.catatan)}</span></div>` : ''}
+    </div>
+    <div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Riwayat Sesi Terakhir</div>
+    <div class="table-wrap"><table style="min-width:0"><thead><tr><th>Tgl</th><th>Materi</th><th>Tipe</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="3" class="empty">Belum ada sesi</td></tr>'}</tbody></table></div>
+    <div class="form-actions" style="margin-top:15px">
+      <button class="btn btn-primary btn-sm" onclick="closeModal('modalMurid');gotoReport('${m.id}')">📄 Laporan Bulanan</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modalMurid');editMurid('${m.id}')">✏️ Edit</button>
+      <button class="btn btn-danger btn-sm" onclick="hapusMurid('${m.id}')">🗑 Hapus</button>
+      <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="closeModal('modalMurid')">Tutup</button>
+    </div>`;
+  document.getElementById('modalMurid').classList.add('open');
+}
+
+async function hapusMurid(id){
+  const m = muridById(id);
+  if (!confirm('Hapus murid "' + (m ? m.nama : '') + '"? Riwayat sesinya tetap tersimpan di sheet.')) return;
+  try {
+    await API.deleteMurid(id);
+    closeModal('modalMurid');
+    showToast('Murid dihapus', 'success');
+    await refreshCore(); renderDashboard(); renderProgChips(); renderMuridGroups();
+  } catch(e){ showToast('Gagal: ' + e.message, 'error'); }
+}
+
+function materiRingkas(s){
+  return MATERI.map(k => s[k.key] ? k.id + ': ' + s[k.key] : '').filter(Boolean).join(' · ');
+}
+
+/* ══════════════════════════════════════════════════════════
+   INPUT SESI
+   ══════════════════════════════════════════════════════════ */
+function setTipe(t){
+  sesiTipe = t;
+  document.getElementById('tipeReguler').className = t === 'reguler' ? 'active' : '';
+  document.getElementById('tipeFree').className    = t === 'free' ? 'active free' : '';
+  document.getElementById('tipeHint').innerHTML = t === 'free'
+    ? '🎁 Sesi gratis — <b>tidak</b> memotong kuota & tidak ditagih di invoice.'
+    : 'Memotong kuota paket murid.';
+}
+
+/* Tampilkan angka sesi tanpa desimal menggantung: 1.5 → "1,5", 2 → "2" */
+const fmtSesi = n => {
+  const v = Math.round(Number(n || 0) * 100) / 100;
+  return (Number.isInteger(v) ? String(v) : v.toFixed(1).replace('.', ',')).replace(/,0$/, '');
+};
+
+/** Isi "Potong Kuota" dari selisih jam, dibulatkan ke kelipatan ½ sesi.
+ *  90 menit → 1,5 sesi. Tetap bisa diubah manual setelahnya. */
+function hitungDurasi(){
+  const a = document.getElementById('fSJamMulai').value;
+  const b = document.getElementById('fSJamSelesai').value;
+  const sel  = document.getElementById('fSDurasi');
+  const hint = document.getElementById('durasiHint');
+  if (!a || !b) return;
+
+  const men = (t => { const p = t.split(':'); return (+p[0]) * 60 + (+p[1]); });
+  let menit = men(b) - men(a);
+  if (menit <= 0) menit += 24 * 60;                       // kelas lewat tengah malam
+
+  const dur = Math.max(0.5, Math.round(menit / 30) / 2);  // bulatkan ke ½ sesi
+  const ada = Array.prototype.some.call(sel.options, o => Number(o.value) === dur);
+  if (ada) {
+    sel.value = String(dur);
+    hint.innerHTML = `${menit} menit → memotong <b>${fmtSesi(dur)}</b> sesi. Bisa diubah manual.`;
+  } else {
+    hint.innerHTML = `${menit} menit tidak ada di daftar — pilih sendiri yang paling mendekati.`;
+  }
+}
+
+function onDurasiChange(){
+  const d = Number(document.getElementById('fSDurasi').value) || 1;
+  document.getElementById('durasiHint').innerHTML =
+    `Sesi ini memotong <b>${fmtSesi(d)}</b> sesi dari kuota paket.`;
+}
+
+function setInputMode(mode){
+  inputMode = mode;
+  document.getElementById('modeSatuan').className = mode === 'satuan' ? 'active' : '';
+  document.getElementById('modeBatch').className  = mode === 'batch'  ? 'active' : '';
+  document.getElementById('wrapSMurid').style.display = mode === 'satuan' ? '' : 'none';
+  document.getElementById('wrapSBatch').style.display = mode === 'batch'  ? '' : 'none';
+  if (mode === 'batch') onSesiBatchChange(); else onSesiMuridChange();
+}
+
+function onSesiMuridChange(){
+  const m = muridById(document.getElementById('fSMurid').value);
+  const info = document.getElementById('sesiQuotaInfo');
+  if (!m) { info.textContent = ''; return; }
+  if (m.guru_id)  document.getElementById('fSGuru').value = m.guru_id;
+  if (m.program)  document.getElementById('fSProgram').value = m.program;
+  if (m.mode)     document.getElementById('fSMode').value = m.mode;
+  info.innerHTML = `Sisa kuota <b style="color:${m.sisa_sesi<=3?'var(--danger)':'var(--maroon)'}">${fmtSesi(m.sisa_sesi)}</b> dari ${fmtSesi(m.total_sesi)} sesi`;
+}
+
+function onSesiBatchChange(){
+  const b = document.getElementById('fSBatch').value;
+  const anggota = b ? anggotaBatch(b) : [];
+  const info = document.getElementById('sesiQuotaInfo');
+  const list = document.getElementById('batchAnggota');
+  if (!anggota.length){
+    list.textContent = 'Tiap anggota tetap dapat catatan sesi sendiri.';
+    info.textContent = ''; return;
+  }
+  const a0 = anggota[0];
+  if (a0.guru_id) document.getElementById('fSGuru').value = a0.guru_id;
+  if (a0.program) document.getElementById('fSProgram').value = a0.program;
+  if (a0.mode)    document.getElementById('fSMode').value = a0.mode;
+  list.innerHTML = 'Anggota: ' + anggota.map(m => esc(m.nama)).join(', ');
+  info.innerHTML = anggota.map(m =>
+    `${esc(m.nama)}: <b style="color:${m.sisa_sesi<=3?'var(--danger)':'var(--maroon)'}">${fmtSesi(m.sisa_sesi)}</b>`).join(' · ');
+}
+
+async function saveSesi(){
+  const d = {
+    murid_id:    document.getElementById('fSMurid').value,
+    guru_id:     document.getElementById('fSGuru').value,
+    tanggal:     document.getElementById('fSTanggal').value,
+    jam_mulai:   document.getElementById('fSJamMulai').value,
+    jam_selesai: document.getElementById('fSJamSelesai').value,
+    program:     document.getElementById('fSProgram').value,
+    mode:        document.getElementById('fSMode').value,
+    tipe:        sesiTipe,
+    skor:        document.getElementById('fSSkor').value,
+    skor_max:    document.getElementById('fSSkorMax').value,
+    catatan:     document.getElementById('fSCatatan').value.trim(),
+    durasi:      Number(document.getElementById('fSDurasi').value) || 1,
+  };
+  MATERI.forEach(k => { const el = materiEl(k.key); d[k.key] = el ? el.value.trim() : ''; });
+  const batch = document.getElementById('fSBatch').value;
+  const anggota = inputMode === 'batch' ? anggotaBatch(batch) : [];
+
+  if (inputMode === 'batch'){
+    if (!batch)          return showToast('Pilih batch dulu', 'error');
+    if (!anggota.length) return showToast('Batch ini belum punya murid aktif', 'error');
+  } else if (!d.murid_id) return showToast('Pilih murid dulu', 'error');
+  if (!d.tanggal) return showToast('Tanggal wajib diisi', 'error');
+
+  const adaMateri = MATERI.some(k => d[k.key]);
+  if (!adaMateri && !confirm('Belum ada materi yang diisi. Tetap simpan?')) return;
+
+  try {
+    let pesan;
+    if (inputMode === 'batch'){
+      delete d.murid_id;
+      await API.addSesiBatch({ ...d, murid_ids: anggota.map(m => m.id) });
+      pesan = `Sesi tersimpan untuk ${anggota.length} murid (${batch})`;
+    } else {
+      await API.addSesi(d);
+      pesan = sesiTipe === 'free' ? 'Sesi FREE tersimpan 🎁' : 'Sesi tersimpan';
+    }
+    showToast(pesan, 'success');
+
+    // Ikutkan filter riwayat ke bulan sesi yang baru disimpan, supaya
+    // recordnya langsung terlihat walau tanggalnya bukan bulan berjalan.
+    document.getElementById('filtSesiBulan').value = String(d.tanggal).slice(0, 7);
+
+    resetSesiForm(true);
+    await refreshCore(); renderDashboard(); loadSesiList();
+    if (tabLoaded.murid) { renderProgChips(); renderMuridGroups(); }
+  } catch(e){ showToast('Gagal: ' + e.message, 'error'); }
+}
+
+function resetSesiForm(keepMurid){
+  MATERI.forEach(k => { const el = materiEl(k.key); if (el) el.value = ''; });
+  ['fSSkor','fSSkorMax','fSCatatan'].forEach(i => document.getElementById(i).value = '');
+  hitungDurasi();
+  if (!keepMurid) { document.getElementById('fSMurid').value = ''; document.getElementById('fSBatch').value = ''; }
+  setTipe('reguler');
+  if (inputMode === 'batch') onSesiBatchChange(); else onSesiMuridChange();
+}
+
+async function loadSesiList(){
+  const tb = document.getElementById('sesiTbody');
+  tb.innerHTML = '<tr><td colspan="9" class="empty"><span class="spinner"></span></td></tr>';
+  const mid = document.getElementById('filtSesiMurid').value;
+  const bln = document.getElementById('filtSesiBulan').value;
+  let rows = allSesi.slice();
+  if (mid) rows = rows.filter(s => s.murid_id === mid);
+  if (bln) rows = rows.filter(s => String(s.tanggal).indexOf(bln) === 0);
+  rows.sort((a,b) => String(b.tanggal).localeCompare(String(a.tanggal)));
+
+  if (!rows.length){
+    // Bedakan "memang belum ada data" dari "tersaring filter" — ini yang dulu
+    // bikin sesi terlihat hilang padahal tersimpan di bulan lain.
+    const totalSemua = mid ? allSesi.filter(s => s.murid_id === mid).length : allSesi.length;
+    tb.innerHTML = totalSemua
+      ? `<tr><td colspan="9" class="empty">
+           Tidak ada sesi di ${esc(fmtBulan(bln))}, tapi ada <b>${totalSemua} sesi</b> di bulan lain.<br>
+           <button class="btn btn-ghost btn-sm" style="margin-top:9px" onclick="lihatSemuaSesi()">
+             Tampilkan semua bulan</button></td></tr>`
+      : '<tr><td colspan="9" class="empty">Belum ada sesi tercatat</td></tr>';
+    return;
+  }
+
+  tb.innerHTML = rows.map(s => `
+    <tr>
+      <td style="white-space:nowrap">${fmtDateShort(s.tanggal)}</td>
+      <td style="white-space:nowrap">${esc(s.jam_mulai)||'–'}${s.jam_selesai ? '–' + esc(s.jam_selesai) : ''}</td>
+      <td><b>${esc(s.nama_murid)}</b></td>
+      <td>${esc(s.program) || '–'}</td>
+      <td style="min-width:200px;font-size:12px">${esc(materiRingkas(s)) || '–'}</td>
+      <td style="white-space:nowrap">${s.skor ? esc(s.skor) + (s.skor_max ? ' / ' + esc(s.skor_max) : '') : '–'}</td>
+      <td style="white-space:nowrap"><b>${fmtSesi(s.durasi || 1)}</b> sesi</td>
+      <td>${s.tipe === 'free' ? '<span class="badge b-free">FREE</span>' : '<span class="badge b-maroon">Reguler</span>'}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="hapusSesi('${s.id}')">🗑</button></td>
+    </tr>`).join('');
+}
+
+function lihatSemuaSesi(){
+  document.getElementById('filtSesiBulan').value = '';
+  loadSesiList();
+}
+
+async function hapusSesi(id){
+  if (!confirm('Hapus record sesi ini?')) return;
+  try {
+    await API.deleteSesi(id);
+    showToast('Sesi dihapus', 'success');
+    await refreshCore(); renderDashboard(); loadSesiList();
+    if (tabLoaded.murid) renderMuridGroups();
+  } catch(e){ showToast('Gagal: ' + e.message, 'error'); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   LAPORAN BULANAN — print ready
+   ══════════════════════════════════════════════════════════ */
+function gotoReport(muridId){
+  const btn = document.querySelectorAll('.tab-btn')[3];
+  showTab('laporan', btn);
+  document.getElementById('repMurid').value = muridId;
+  buildReport();
+}
+
+async function buildReport(){
+  const mid = document.getElementById('repMurid').value;
+  const bln = document.getElementById('repBulan').value;
+  const scope = document.getElementById('repScope').value;
+  const area = document.getElementById('printArea');
+  if (!mid) return showToast('Pilih murid dulu', 'error');
+
+  area.innerHTML = '<div class="empty" style="padding:60px"><span class="spinner"></span></div>';
+  try {
+    reportData = await API.getLaporanBulanan(mid, scope === 'all' ? '' : bln);
+    renderReport(reportData, scope === 'all' ? '' : bln);
+  } catch(e){
+    area.innerHTML = `<div class="empty" style="padding:50px">⚠️ ${esc(e.message)}</div>`;
+  }
+}
+
+function renderReport(d, bln){
+  const m = d.murid;
+  const sesi = d.sesi || [];
+  const area = document.getElementById('printArea');
+
+  if (!sesi.length){
+    area.innerHTML = `<div class="empty" style="padding:60px 20px">
+      Belum ada sesi tercatat untuk <b>${esc(m.nama)}</b>${bln ? ' di ' + fmtBulan(bln) : ''}.</div>`;
+    return;
+  }
+
+  // kelompokkan per program (seperti "1. HSK Level 1", "2. HSK Level 2")
+  const groups = [];
+  sesi.forEach(s => {
+    const key = s.program || m.program || '—';
+    let g = groups.filter(x => x.key === key)[0];
+    if (!g) { g = { key: key, rows: [] }; groups.push(g); }
+    g.rows.push(s);
+  });
+
+  const zhProgram = k => {
+    const mm = /HSK\s*([1-5])/i.exec(k || '');
+    if (mm) return '汉语水平考试' + ['一','二','三','四','五'][mm[1]-1] + '级 (HSK Level ' + mm[1] + ')';
+    if (/conversation/i.test(k)) return '汉语口语 (Conversation)';
+    if (/semi/i.test(k))        return '小班课 (Semi-Private)';
+    return k;
+  };
+
+  const materiCell = s => {
+    const lines = MATERI.map(k => s[k.key]
+      ? `<div class="mat-line"><b>${k.zh} ${k.id}</b><span>: ${esc(s[k.key])}</span></div>` : '').filter(Boolean);
+    if (s.catatan) lines.push(`<div class="mat-line" style="color:#666"><b>备注 Note</b><span>: ${esc(s.catatan)}</span></div>`);
+    return lines.join('') || '<span style="color:#999">–</span>';
+  };
+
+  const tables = groups.map((g, i) => `
+    <div class="rep-sec">${i+1}. ${esc(zhProgram(g.key))}</div>
+    <table class="rep">
+      <thead><tr>
+        <th style="width:34px"><span class="zh">序号</span>No</th>
+        <th style="width:74px"><span class="zh">日期</span>Date</th>
+        <th style="width:82px"><span class="zh">课程表</span>Schedule</th>
+        <th><span class="zh">学习内容</span>Material</th>
+        <th style="width:64px"><span class="zh">分数</span>Score</th>
+        <th style="width:60px"><span class="zh">剩余课时</span>Hours Left</th>
+      </tr></thead>
+      <tbody>${g.rows.map(s => `
+        <tr>
+          <td class="rep-c">${s.no}</td>
+          <td class="rep-c" style="white-space:nowrap">${fmtDateShort(s.tanggal)}</td>
+          <td class="rep-c" style="white-space:nowrap">${esc(s.jam) || '–'}${Number(s.durasi) !== 1 ? `<div style="font-size:9px;color:#7A1F2B">${fmtSesi(s.durasi)} sesi</div>` : ''}</td>
+          <td>${materiCell(s)}</td>
+          <td class="rep-c">${s.skor ? esc(s.skor) + (s.skor_max ? ' / ' + esc(s.skor_max) : '') : '–'}</td>
+          <td class="rep-c"><b>${s.tipe === 'free' ? '<span class="rep-free">FREE</span>' : fmtSesi(s.sisa) + 'h'}</b></td>
+        </tr>`).join('')}</tbody>
+    </table>`).join('');
+
+  const periode = bln ? fmtBulan(bln) : 'Semua Periode';
+  const freeCount = sesi.filter(s => s.tipe === 'free').length;
+
+  area.innerHTML = `
+    <div class="rep-head">
+      <div class="rep-brandline">
+        <img src="logo.png" alt="Mandarin Cincay" class="rep-logo"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <span style="display:none;align-items:center;gap:10px">
+          <span class="rep-mark">易</span>
+          <span class="rep-brand">Mandarin Cincay<small>Belajar Mandarin? Cincay lah!</small></span>
+        </span>
+      </div>
+      <div class="rep-h1">学生学习进度报告</div>
+      <div class="rep-h2">Mandarin Learning Progress Report · ${esc(periode)}</div>
+    </div>
+
+    <div class="rep-info">
+      <div><b>学生姓名 / Student</b><span>: ${esc(m.nama)}</span></div>
+      <div><b>课程 / Program</b><span>: ${esc(m.program) || '–'}${m.batch ? ' — ' + esc(m.batch) : ''}${m.mode ? ' (' + esc(m.mode) + ')' : ''}</span></div>
+      <div><b>老师 / Teacher</b><span>: ${esc(m.laoshi) || '–'}</span></div>
+      <div><b>开课日期 / Start Date</b><span>: ${fmtDate(m.tgl_mulai)}</span></div>
+      <div><b>套餐时长 / Package</b><span>: ${esc(m.paket) || '–'}</span></div>
+      <div><b>剩余课时 / Balance</b><span>: ${fmtSesi(m.sisa_sesi)} Session</span></div>
+    </div>
+
+    <div class="rep-summary">
+      <div class="rep-sum"><div class="v">${fmtSesi(m.total_sesi)}</div><div class="k">Total Sesi Paket</div></div>
+      <div class="rep-sum"><div class="v">${fmtSesi(m.sesi_terpakai)}</div><div class="k">Sesi Terpakai</div></div>
+      <div class="rep-sum"><div class="v">${fmtSesi(m.sisa_sesi)}</div><div class="k">Sisa Sesi</div></div>
+    </div>
+    ${freeCount ? `<div style="font-size:10.5px;color:#7A1F2B;margin-top:6px"><b>Catatan:</b> ${freeCount} sesi pada laporan ini adalah <b>FREE CLASS</b> dan tidak memotong kuota paket.</div>` : ''}
+
+    ${tables}
+
+    <div class="rep-foot">
+      <div>
+        <b style="color:var(--maroon)">Mandarin Cincay</b> · <i style="color:var(--gold)">Belajar Mandarin? Cincay lah!</i><br>
+        Laporan dibuat otomatis · ${new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}<br>
+        谢谢 — 加油学习！
+      </div>
+      <div class="rep-sign">
+        <div class="rep-sign-lbl">${esc(TTD_LAPORAN.jabatan || 'Head Teacher')}</div>
+        <div class="rep-sign-area">
+          ${TTD_LAPORAN.gambar ? `<img src="${esc(TTD_LAPORAN.gambar)}" alt="" class="rep-ttd" onerror="this.style.display='none'">` : ''}
+          ${TTD_LAPORAN.stempel ? `<img src="${esc(TTD_LAPORAN.stempel)}" alt="" class="rep-cap" onerror="this.style.display='none'">` : ''}
+        </div>
+        <div class="n">${esc(TTD_LAPORAN.nama) || '(...............................)'}</div>
+      </div>
+    </div>`;
+}
+
+function copyReportWA(){
+  if (!reportData) return showToast('Tampilkan laporan dulu', 'error');
+  const m = reportData.murid, s = reportData.sesi || [];
+  const bln = document.getElementById('repBulan').value;
+  const txt =
+`*Laporan Belajar – Mandarin Cincay*
+学生学习进度报告
+
+Nama    : ${m.nama}
+Program : ${m.program || '-'}
+Laoshi  : ${m.laoshi || '-'}
+Periode : ${document.getElementById('repScope').value === 'all' ? 'Semua periode' : fmtBulan(bln)}
+Paket   : ${m.paket || '-'}
+
+Sesi bulan ini : ${s.length}x${s.filter(x=>x.tipe==='free').length ? ' (termasuk ' + s.filter(x=>x.tipe==='free').length + 'x FREE)' : ''}
+Sesi terpakai  : ${fmtSesi(m.sesi_terpakai)} / ${fmtSesi(m.total_sesi)}
+*Sisa sesi     : ${fmtSesi(m.sisa_sesi)}*
+
+Materi yang dipelajari:
+${s.map(x => '• ' + fmtDateShort(x.tanggal) + ' — ' + (materiRingkas(x) || 'kelas berjalan') + (x.tipe==='free' ? ' [FREE]' : '')).join('\n')}
+
+谢谢 — terima kasih atas kepercayaannya 🙏
+_Mandarin Cincay_`;
+  navigator.clipboard.writeText(txt)
+    .then(() => showToast('Ringkasan disalin ke clipboard', 'success'))
+    .catch(() => showToast('Gagal menyalin', 'error'));
+}
+
+/* ══════════════════════════════════════════════════════════
+   INVOICE
+   ══════════════════════════════════════════════════════════ */
+function onInvChange(){
+  invMuridObj = muridById(document.getElementById('invMurid').value);
+  const bln = document.getElementById('invBulan').value;
+  const hint = document.getElementById('invAutoHint');
+  if (!invMuridObj || !bln){ hint.textContent = ''; updateInvPreview(); return; }
+
+  const ss   = allSesi.filter(s => s.murid_id === invMuridObj.id && String(s.tanggal).indexOf(bln) === 0);
+  const tot  = arr => Math.round(arr.reduce((a,s) => a + (Number(s.durasi) || 1), 0) * 100) / 100;
+  const bayar= tot(ss.filter(s => s.tipe !== 'free'));
+  const free = tot(ss.filter(s => s.tipe === 'free'));
+  document.getElementById('invSesi').value = bayar;
+  hint.innerHTML = `Terdeteksi <b>${fmtSesi(bayar)}</b> sesi berbayar${free ? ` dan <b>${fmtSesi(free)}</b> sesi FREE (tidak ditagih)` : ''} di ${fmtBulan(bln)}. Fee ${fmtRp(invMuridObj.fee_per_lesson)}/sesi.`;
+  updateInvPreview();
+}
+
+function updateInvPreview(){
+  const el = document.getElementById('waInvText');
+  const bln = document.getElementById('invBulan').value;
+  if (!invMuridObj || !bln){ el.textContent = 'Pilih murid dan bulan untuk melihat preview.'; return; }
+  const sesi = Number(document.getElementById('invSesi').value) || 0;   // boleh pecahan, mis. 7,5
+  const fee  = Number(invMuridObj.fee_per_lesson) || 0;
+  const cat  = document.getElementById('invCatatan').value.trim();
+  el.textContent =
+`*Invoice – Mandarin Cincay*
+学费账单
+
+Nama    : ${invMuridObj.nama}
+Program : ${invMuridObj.program || '-'}
+Periode : ${fmtBulan(bln)}
+
+Jumlah sesi : ${fmtSesi(sesi)}x
+Fee/sesi    : ${fmtRp(fee)}
+*Total       : ${fmtRp(fee * sesi)}*
+
+Sisa sesi paket : ${fmtSesi(invMuridObj.sisa_sesi)}
+${cat ? '\nCatatan: ' + cat + '\n' : ''}
+Mohon konfirmasi setelah pembayaran ya 🙏
+谢谢 — Mandarin Cincay`;
+}
+
+function copyInvWA(){
+  navigator.clipboard.writeText(document.getElementById('waInvText').textContent)
+    .then(() => showToast('Disalin!', 'success')).catch(() => showToast('Gagal menyalin','error'));
+}
+function kirimInvWA(){
+  if (!invMuridObj) return showToast('Pilih murid dulu','error');
+  waLink(invMuridObj.wa_laporan || invMuridObj.wa_ortu, document.getElementById('waInvText').textContent);
+}
+
+async function doGenerateInvoice(){
+  const mid = document.getElementById('invMurid').value;
+  const bln = document.getElementById('invBulan').value;
+  const sesi= Number(document.getElementById('invSesi').value) || 0;
+  if (!mid || !bln) return showToast('Murid dan bulan wajib diisi', 'error');
+  if (sesi <= 0)    return showToast('Jumlah sesi harus lebih dari 0', 'error');
+  try {
+    await API.generateInvoice({ murid_id: mid, bulan: bln, sesi: sesi,
+      catatan: document.getElementById('invCatatan').value.trim() });
+    showToast('Invoice dibuat', 'success');
+    loadInvoice();
+  } catch(e){ showToast('Gagal: ' + e.message, 'error'); }
+}
+
+async function loadInvoice(){
+  const tb = document.getElementById('invTbody');
+  tb.innerHTML = '<tr><td colspan="6" class="empty"><span class="spinner"></span></td></tr>';
+  try {
+    const rows = await API.getInvoice({});
+    tb.innerHTML = rows.length ? rows.map(r => {
+      const cls = r.status === 'lunas' ? 'b-green' : r.status === 'menunggu_konfirmasi' ? 'b-yellow' : 'b-red';
+      const lbl = r.status === 'lunas' ? 'Lunas' : r.status === 'menunggu_konfirmasi' ? 'Menunggu' : 'Belum Bayar';
+      return `<tr>
+        <td><b>${esc(r.nama_murid)}</b></td>
+        <td>${fmtBulan(r.bulan)}</td>
+        <td>${r.sesi}</td>
+        <td><b>${fmtRp(r.nominal)}</b></td>
+        <td><span class="badge ${cls}">${lbl}</span></td>
+        <td style="white-space:nowrap">
+          ${r.status !== 'lunas' ? `<button class="btn btn-ghost btn-sm" onclick="setInvLunas('${r.id}')">✓ Lunas</button>` : ''}
+          <button class="btn btn-danger btn-sm" onclick="hapusInvoice('${r.id}')">🗑</button>
+        </td></tr>`;
+    }).join('') : '<tr><td colspan="6" class="empty">Belum ada invoice</td></tr>';
+  } catch(e){
+    tb.innerHTML = `<tr><td colspan="6" class="empty">⚠️ ${esc(e.message)}</td></tr>`;
+  }
+}
+async function setInvLunas(id){
+  try { await API.updateInvoiceStatus(id, 'lunas', today()); showToast('Ditandai lunas','success'); loadInvoice(); }
+  catch(e){ showToast('Gagal: ' + e.message, 'error'); }
+}
+async function hapusInvoice(id){
+  if (!confirm('Hapus invoice ini?')) return;
+  try { await API.deleteInvoice(id); showToast('Invoice dihapus','success'); loadInvoice(); }
+  catch(e){ showToast('Gagal: ' + e.message, 'error'); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   LAOSHI & SLIP GAJI
+   ══════════════════════════════════════════════════════════ */
+function renderGuruTable(){
+  const tb = document.getElementById('guruTbody');
+  tb.innerHTML = allGuru.length ? allGuru.map(g => `
+    <tr>
+      <td><b>${esc(g.nama)}</b><div style="font-size:11px;color:var(--muted)">${esc(g.jabatan)||''}</div></td>
+      <td>${esc(g.id_karyawan) || '–'}</td>
+      <td>${fmtRp(g.honor_onsite)}</td>
+      <td>${fmtRp(g.honor_online)}</td>
+      <td>${esc(g.wa) || '–'}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-ghost btn-sm" onclick="editGuru('${g.id}')">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="hapusGuru('${g.id}')">🗑</button>
+      </td></tr>`).join('') : '<tr><td colspan="6" class="empty">Belum ada laoshi. Klik ➕ Tambah Laoshi.</td></tr>';
+}
+function closeGuruForm(){
+  document.getElementById('form-guru').classList.remove('open');
+  document.getElementById('fGId').value = '';
+  ['fGNama','fGIdKar','fGHonorOnsite','fGHonorOnline','fGWa'].forEach(i => document.getElementById(i).value = '');
+}
+function editGuru(id){
+  const g = guruById(id); if(!g) return;
+  document.getElementById('fGId').value          = g.id;
+  document.getElementById('fGNama').value        = g.nama || '';
+  document.getElementById('fGIdKar').value       = g.id_karyawan || '';
+  document.getElementById('fGJabatan').value     = g.jabatan || '';
+  document.getElementById('fGHonorOnsite').value = g.honor_onsite || '';
+  document.getElementById('fGHonorOnline').value = g.honor_online || '';
+  document.getElementById('fGTgl').value         = g.tgl_bergabung || '';
+  document.getElementById('fGWa').value          = g.wa || '';
+  document.getElementById('form-guru').classList.add('open');
+}
+async function saveGuru(){
+  const d = {
+    nama:          document.getElementById('fGNama').value.trim(),
+    id_karyawan:   document.getElementById('fGIdKar').value.trim(),
+    jabatan:       document.getElementById('fGJabatan').value.trim(),
+    honor_onsite:  Number(document.getElementById('fGHonorOnsite').value) || 0,
+    honor_online:  Number(document.getElementById('fGHonorOnline').value) || 0,
+    tgl_bergabung: document.getElementById('fGTgl').value,
+    wa:            document.getElementById('fGWa').value.trim(),
+  };
+  if (!d.nama) return showToast('Nama laoshi wajib diisi','error');
+  const id = document.getElementById('fGId').value;
+  try {
+    if (id) { d.id = id; await API.updateGuru(d); } else { await API.addGuru(d); }
+    showToast('Data laoshi tersimpan','success');
+    closeGuruForm();
+    allGuru = await API.getGuru();
+    populateSelects(); renderGuruTable(); renderDashboard();
+  } catch(e){ showToast('Gagal: ' + e.message, 'error'); }
+}
+async function hapusGuru(id){
+  if (!confirm('Hapus laoshi ini?')) return;
+  try {
+    await API.deleteGuru(id);
+    allGuru = await API.getGuru();
+    populateSelects(); renderGuruTable(); showToast('Laoshi dihapus','success');
+  } catch(e){ showToast('Gagal: ' + e.message, 'error'); }
+}
+
+function hitungSlip(){
+  const gid = document.getElementById('slipGuru').value;
+  const bln = document.getElementById('slipBulan').value;
+  const box = document.getElementById('slipResult');
+  const g = guruById(gid);
+  if (!g || !bln){ box.className = 'empty'; box.textContent = 'Pilih laoshi dan bulan, lalu klik Hitung.'; return; }
+
+  const ss = allSesi.filter(s => s.guru_id === gid && String(s.tanggal).indexOf(bln) === 0);
+  const isOffline = s => s.mode === 'Offline' || s.mode === 'Onsite';   // 'Onsite' = data lama
+  const onsite = ss.filter(isOffline).length;
+  const online = ss.length - onsite;
+  const free   = ss.filter(s => s.tipe === 'free').length;
+  const hO = Number(g.honor_onsite) || 0, hL = Number(g.honor_online) || 0;
+  const total = onsite * hO + online * hL;
+
+  box.className = '';
+  box.innerHTML = `
+    <div class="table-wrap" style="margin-bottom:12px">
+      <table style="min-width:0"><tbody>
+        <tr><td>Nama Laoshi</td><td style="text-align:right"><b>${esc(g.nama)}</b></td></tr>
+        <tr><td>ID Karyawan</td><td style="text-align:right">${esc(g.id_karyawan) || '–'}</td></tr>
+        <tr><td>Periode</td><td style="text-align:right">${fmtBulan(bln)}</td></tr>
+        <tr><td>Sesi Offline (${onsite}× ${fmtRp(hO)})</td><td style="text-align:right"><b>${fmtRp(onsite*hO)}</b></td></tr>
+        <tr><td>Sesi Online (${online}× ${fmtRp(hL)})</td><td style="text-align:right"><b>${fmtRp(online*hL)}</b></td></tr>
+        ${free ? `<tr><td>Termasuk sesi FREE untuk murid</td><td style="text-align:right">${free} sesi <span style="font-size:11px;color:var(--muted)">(tetap dibayar)</span></td></tr>` : ''}
+        <tr style="background:var(--gold-soft)"><td><b>Take Home Pay</b></td><td style="text-align:right"><b style="font-size:16px;color:var(--maroon)">${fmtRp(total)}</b></td></tr>
+      </tbody></table>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-ghost btn-sm" onclick="copySlip('${gid}','${bln}',${onsite},${online},${total})">📋 Salin</button>
+      <button class="btn btn-primary btn-sm" onclick="kirimSlip('${gid}','${bln}',${onsite},${online},${total})">📱 Kirim WA</button>
+    </div>`;
+}
+
+function slipText(gid, bln, onsite, online, total){
+  const g = guruById(gid) || {};
+  return `*Slip Gaji – Mandarin Cincay*
+工资单
+
+Nama   : ${g.nama || '-'}
+ID     : ${g.id_karyawan || '-'}
+Status : ${g.jabatan || 'Freelance Teacher'}
+Periode: ${fmtBulan(bln)}
+
+*Pendapatan:*
+Honor Offline (${onsite} sesi × ${fmtRp(g.honor_onsite)}) : ${fmtRp(onsite * (Number(g.honor_onsite)||0))}
+Honor Online (${online} sesi × ${fmtRp(g.honor_online)}) : ${fmtRp(online * (Number(g.honor_online)||0))}
+
+*Take Home Pay : ${fmtRp(total)}*
+
+谢谢 — Mandarin Cincay`;
+}
+function copySlip(gid, bln, on, ol, t){
+  navigator.clipboard.writeText(slipText(gid, bln, on, ol, t))
+    .then(() => showToast('Slip disalin','success')).catch(() => showToast('Gagal menyalin','error'));
+}
+function kirimSlip(gid, bln, on, ol, t){
+  const g = guruById(gid) || {};
+  waLink(g.wa, slipText(gid, bln, on, ol, t));
+}
+
+/* langsung muat data begitu halaman dibuka — tanpa login */
+document.addEventListener('DOMContentLoaded', initApp);
+</script>
+</body>
+</html>
