@@ -37,7 +37,7 @@ const MASTER_DEFAULT = {
 // Kategori materi — dipakai konsisten di frontend & laporan bulanan
 // Menambah kategori materi = tambah key di sini + tambah nama kolom yang sama
 // di schema sheet 'Sesi' + tambah entri di MATERI (api.js), lalu Run setupSheets().
-const MATERI_KEYS  = ['mock_paper','material','review','dictation','vocabulary','homework','writing'];
+const MATERI_KEYS  = ['mock_paper','review','dictation','vocabulary','homework','writing'];
 
 /* ── Util ───────────────────────────────────────────────────── */
 function uid() {
@@ -204,7 +204,7 @@ const SCHEMAS = {
     'id', 'murid_id', 'nama_murid', 'guru_id', 'tanggal', 'jam_mulai', 'jam_selesai',
     'program', 'tipe', 'mode',
     'durasi',
-    'mock_paper', 'material', 'review', 'dictation', 'vocabulary', 'homework', 'writing',
+    'mock_paper', 'review', 'dictation', 'vocabulary', 'homework', 'writing',
     'skor', 'skor_max', 'catatan', 'timestamp'
   ],
   'Invoice': [

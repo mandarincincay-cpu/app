@@ -37,7 +37,7 @@ const MASTER_DEFAULT = {
 // Kategori materi — dipakai konsisten di frontend & laporan bulanan
 // Menambah kategori materi = tambah key di sini + tambah nama kolom yang sama
 // di schema sheet 'Sesi' + tambah entri di MATERI (api.js), lalu Run setupSheets().
-const MATERI_KEYS  = ['mock_paper','review','dictation','vocabulary','homework','writing'];
+const MATERI_KEYS  = ['mock_paper','material','review','dictation','vocabulary','homework','writing'];
 
 /* ── Util ───────────────────────────────────────────────────── */
 function uid() {
@@ -148,6 +148,7 @@ function route(p) {
       /* setup & master */
       case 'setup':          return ok(setupSheets());
       case 'getMaster':      return ok(getMaster());
+      case 'getBoot':        return ok(getBoot());
 
       /* murid */
       case 'getMurid':       return ok(getMurid(p));
@@ -204,7 +205,7 @@ const SCHEMAS = {
     'id', 'murid_id', 'nama_murid', 'guru_id', 'tanggal', 'jam_mulai', 'jam_selesai',
     'program', 'tipe', 'mode',
     'durasi',
-    'mock_paper', 'review', 'dictation', 'vocabulary', 'homework', 'writing',
+    'mock_paper', 'material', 'review', 'dictation', 'vocabulary', 'homework', 'writing',
     'skor', 'skor_max', 'catatan', 'timestamp'
   ],
   'Invoice': [
@@ -213,6 +214,21 @@ const SCHEMAS = {
   ],
   'Master': MASTER_COLS,
 };
+
+/* ══════════════════════════════════════════════════════════════
+   BOOT — semua data awal dalam SATU panggilan.
+   Apps Script mengantrekan eksekusi yang berbarengan per akun, jadi
+   4 panggilan terpisah memakan waktu 4x lipat walau dikirim bersamaan.
+   Satu panggilan ini membaca seluruh sheet sekali jalan.
+   ══════════════════════════════════════════════════════════════ */
+function getBoot() {
+  return {
+    murid : getRekap(),
+    guru  : sheetToObjects(getSheet('Guru')),
+    sesi  : getSesi({}),
+    master: getMaster(),
+  };
+}
 
 /* ══════════════════════════════════════════════════════════════
    MASTER — isi dropdown, bisa diedit langsung di sheet "Master"

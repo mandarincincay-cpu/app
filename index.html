@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Serif+SC:wght@500;700&display=swap" rel="stylesheet">
 <!-- ?v= dinaikkan tiap kali api.js berubah, supaya browser tidak memakai versi cache -->
-<script src="api.js?v=9"></script>
+<script src="api.js?v=11"></script>
 <style>
 /* ══ MANDARIN CINCAY — cream & maroon ══════════════════════ */
 :root{
@@ -683,9 +683,9 @@ async function initApp(){
   renderDropdowns();   // pakai nilai cadangan dulu supaya form tidak kosong
 
   try {
-    const res = await Promise.all([API.getRekap(), API.getGuru(), API.getSesi({}), API.getMaster()]);
-    allMurid = res[0] || []; allGuru = res[1] || []; allSesi = res[2] || [];
-    terapkanMaster(res[3]);
+    const b = await muatSemua();
+    allMurid = b.murid || []; allGuru = b.guru || []; allSesi = b.sesi || [];
+    terapkanMaster(b.master);
     populateSelects();
     renderDashboard();
     hdr.textContent = allMurid.length + ' murid · ' + allGuru.length + ' laoshi';
@@ -724,12 +724,26 @@ async function initApp(){
 }
 
 async function refreshCore(){
-  // Master ikut dimuat ulang, jadi perubahan di sheet Master langsung terpakai
-  // begitu tombol "Muat Ulang" ditekan — tanpa perlu refresh halaman.
-  const res = await Promise.all([API.getRekap(), API.getSesi({}), API.getMaster()]);
-  allMurid = res[0] || []; allSesi = res[1] || [];
-  terapkanMaster(res[2]);
+  const b = await muatSemua();
+  allMurid = b.murid || []; allGuru = b.guru || allGuru; allSesi = b.sesi || [];
+  terapkanMaster(b.master);
   populateSelects();
+}
+
+/** Ambil seluruh data awal. Apps Script mengantrekan permintaan yang
+ *  berbarengan, jadi satu panggilan gabungan jauh lebih cepat daripada empat.
+ *  Kalau backend belum di-deploy ulang (getBoot belum dikenal), otomatis
+ *  jatuh ke cara lama supaya aplikasi tetap jalan. */
+async function muatSemua(){
+  try {
+    const b = await API.getBoot();
+    if (b && b.murid) return b;
+    throw new Error('getBoot kosong');
+  } catch (e) {
+    if (!/tidak dikenal|getBoot/i.test(e.message)) throw e;
+    const res = await Promise.all([API.getRekap(), API.getGuru(), API.getSesi({}), API.getMaster()]);
+    return { murid: res[0], guru: res[1], sesi: res[2], master: res[3] };
+  }
 }
 
 function populateSelects(){
